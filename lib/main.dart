@@ -4,7 +4,13 @@ import 'package:get/get.dart';
 import 'package:projecte_prmbls/features/onboarding/views/splash_screen.dart';
 import 'package:projecte_prmbls/routing/app_routes.dart';
 
-void main() {
+void main() async {
+  // Initialize Flutter engine
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize EasyLocalization
+  await EasyLocalization.ensureInitialized();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [
@@ -27,7 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'X',
-      initialRoute: AppRoutes.SPLASH,
+      initialRoute: AppRoutes.SPLASH, // Initial entry point
       getPages: AppRoutes.routes,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
@@ -38,7 +44,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
     );
   }
 }

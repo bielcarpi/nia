@@ -23,6 +23,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/translations/
     - assets/images/social_icons/
     - assets/images/logo/
 

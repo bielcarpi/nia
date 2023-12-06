@@ -1,11 +1,16 @@
 import 'package:get/get.dart';
+import 'package:projecte_prmbls/routing/app_routes.dart';
 
 class SplashController extends GetxController {
   @override
-  void onInit() async {
+  void onInit() {
     super.onInit();
-    await Future.delayed(const Duration(milliseconds: 1500), () {
-      //Get.offAllNamed('/onboarding');
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      Get.offAllNamed(AppRoutes.LOGIN);
     });
+  }
+
+  void hola() {
+    print("hola");
   }
 }

@@ -8,6 +8,9 @@ class SplashScreen extends GetView<SplashController> {
 
   @override
   Widget build(BuildContext context) {
+    // Force the controller to be created (if not already created)
+    var splashController = controller;
+
     return Scaffold(
       backgroundColor: primaryColor,
       body: Center(

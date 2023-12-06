@@ -10,6 +10,7 @@ class SplashScreenBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<SplashController>(() => SplashController());
+    print("SplashController created");
   }
 }
 

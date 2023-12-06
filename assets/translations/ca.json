@@ -1,0 +1,19 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "username": "Usuari",
+      "password": "Contrassenya",
+      "login": "Login",
+      "error": "Usuari o contrassenya incorrectes"
+    },
+    "register": {
+      "title": "Registra't",
+      "username": "Usuari",
+      "password": "Contrassenya",
+      "confirmPassword": "Confirma la contrassenya",
+      "register": "Registra't",
+      "error": "Introdueix un usuari i contrassenya vàlids"
+    }
+  }
+}

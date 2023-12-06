@@ -1,0 +1,19 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "username": "Usuario",
+      "password": "Contraseña",
+      "login": "Login",
+      "error": "Usuario o contraseña incorrectos"
+    },
+    "register": {
+      "title": "Registro",
+      "username": "Usuario",
+      "password": "Contraseña",
+      "confirmPassword": "Confirmar contraseña",
+      "register": "Registro",
+      "error": "Error al registrar el usuario"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "username": "Username",
+      "password": "Password",
+      "login": "Login",
+      "error": "Invalid username or password"
+    },
+    "register": {
+      "title": "Register",
+      "username": "Username",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "register": "Register",
+      "error": "Invalid username or password"
+    }
+  }
+}

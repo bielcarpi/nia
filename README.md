@@ -1,4 +1,4 @@
-# projecte_prmbls
+# Nia flutter app
 
 ## Authors
 

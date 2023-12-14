@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/features/onboarding/views/splash_screen.dart';
 import 'package:projecte_prmbls/routing/app_routes.dart';
 
 void main() async {
@@ -32,7 +31,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'X',
+      title: 'Nia',
       initialRoute: AppRoutes.SPLASH, // Initial entry point
       getPages: AppRoutes.routes,
       localizationsDelegates: context.localizationDelegates,

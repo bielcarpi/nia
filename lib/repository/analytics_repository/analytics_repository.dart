@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/utils/logs/logs.dart';
 
 class AnalyticsRepository {
   static AnalyticsRepository get instance => Get.find();

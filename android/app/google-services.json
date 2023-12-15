@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "669575167418",
+    "project_id": "nia-ia",
+    "storage_bucket": "nia-ia.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:669575167418:android:069a970281f7b19d943183",
+        "android_client_info": {
+          "package_name": "com.nia.assistant"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "669575167418-m1id56fn34nfjd0s37veeojrgf0klbc7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB65ga30Ri2FIqZq_-NTjYhta0WJVqNWj8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "669575167418-m1id56fn34nfjd0s37veeojrgf0klbc7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "669575167418-cc1asuf5pkgvsb0c03v378sg7omaiu4m.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.niaFlutter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

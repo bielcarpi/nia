@@ -1,4 +1,4 @@
-package com.example.nia_flutter
+package com.nia.assistant
 
 import io.flutter.embedding.android.FlutterActivity
 

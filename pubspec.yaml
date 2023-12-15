@@ -15,7 +15,11 @@ dependencies:
   flutter_native_splash: ^2.3.6
   easy_localization: ^3.0.3
   firebase_crashlytics: ^3.4.8
+  firebase_auth: ^4.6.3
   firebase_core: ^2.24.2
+  google_sign_in: ^6.1.4
+  flutter_facebook_auth: ^6.0.3
+  sign_in_with_apple: ^5.0.0
   firebase_analytics: ^10.7.4
   logger: ^2.0.2+1
 

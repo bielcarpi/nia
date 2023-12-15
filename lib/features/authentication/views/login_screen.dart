@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/constants/sizes.dart';
-import 'package:projecte_prmbls/features/authentication/controllers/login_controller.dart';
+import 'package:nia_flutter/constants/sizes.dart';
+import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
 
 class LoginScreen extends GetView<LoginController> {
   const LoginScreen({Key? key}) : super(key: key);

@@ -1,12 +1,12 @@
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/features/authentication/views/forget_password_screen.dart';
-import 'package:projecte_prmbls/features/authentication/views/login_screen.dart';
-import 'package:projecte_prmbls/features/authentication/views/signup_screen.dart';
-import 'package:projecte_prmbls/features/core/views/home_screen.dart';
-import 'package:projecte_prmbls/features/onboarding/views/onboarding_screen.dart';
-import 'package:projecte_prmbls/features/onboarding/views/splash_screen.dart';
-import 'package:projecte_prmbls/routing/bindings.dart';
-import 'package:projecte_prmbls/routing/middleware/auth_middleware.dart';
+import 'package:nia_flutter/features/authentication/views/forget_password_screen.dart';
+import 'package:nia_flutter/features/authentication/views/login_screen.dart';
+import 'package:nia_flutter/features/authentication/views/signup_screen.dart';
+import 'package:nia_flutter/features/core/views/home_screen.dart';
+import 'package:nia_flutter/features/onboarding/views/onboarding_screen.dart';
+import 'package:nia_flutter/features/onboarding/views/splash_screen.dart';
+import 'package:nia_flutter/routing/bindings.dart';
+import 'package:nia_flutter/routing/middleware/auth_middleware.dart';
 
 class AppRoutes {
   static const SPLASH = '/';

@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/utils/validator/validator.dart';
+import 'package:nia_flutter/utils/validator/validator.dart';
 
 class LoginController extends GetxController {
   //TextField controllers to get data from TextFields

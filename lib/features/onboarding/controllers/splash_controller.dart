@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/routing/app_routes.dart';
+import 'package:nia_flutter/routing/app_routes.dart';
 
 class SplashController extends GetxController {
   @override

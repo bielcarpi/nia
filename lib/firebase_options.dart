@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB65ga30Ri2FIqZq_-NTjYhta0WJVqNWj8',
-    appId: '1:669575167418:android:c0d4a985b992e277943183',
+    appId: '1:669575167418:android:0f290f4ec5d94650943183',
     messagingSenderId: '669575167418',
     projectId: 'nia-ia',
     storageBucket: 'nia-ia.appspot.com',
@@ -59,11 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyA2j-q1nlzEWLcHz_FZBAZJn04W5GVyGtM',
-    appId: '1:669575167418:ios:cbc5c163abfb1f04943183',
+    appId: '1:669575167418:ios:7ac920a3ee995243943183',
     messagingSenderId: '669575167418',
     projectId: 'nia-ia',
     storageBucket: 'nia-ia.appspot.com',
-    iosClientId: '669575167418-fe36bnkom1em7k7n81ql89trffdrdbot.apps.googleusercontent.com',
-    iosBundleId: 'com.example.projectePrmbls',
+    iosClientId: '669575167418-cc1asuf5pkgvsb0c03v378sg7omaiu4m.apps.googleusercontent.com',
+    iosBundleId: 'com.example.niaFlutter',
   );
 }

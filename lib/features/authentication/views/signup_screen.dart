@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/features/authentication/controllers/signup_controller.dart';
+import 'package:nia_flutter/features/authentication/controllers/signup_controller.dart';
 
 class SignupScreen extends GetView<SignupController> {
   const SignupScreen({super.key});

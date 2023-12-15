@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/features/authentication/controllers/forget_password_controller.dart';
-import 'package:projecte_prmbls/features/authentication/controllers/login_controller.dart';
-import 'package:projecte_prmbls/features/authentication/controllers/signup_controller.dart';
-import 'package:projecte_prmbls/features/core/controllers/home_controller.dart';
-import 'package:projecte_prmbls/features/onboarding/controllers/onboarding_controller.dart';
-import 'package:projecte_prmbls/features/onboarding/controllers/splash_controller.dart';
+import 'package:nia_flutter/features/authentication/controllers/forget_password_controller.dart';
+import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
+import 'package:nia_flutter/features/authentication/controllers/signup_controller.dart';
+import 'package:nia_flutter/features/core/controllers/home_controller.dart';
+import 'package:nia_flutter/features/onboarding/controllers/onboarding_controller.dart';
+import 'package:nia_flutter/features/onboarding/controllers/splash_controller.dart';
 
 class SplashScreenBinding extends Bindings {
   @override

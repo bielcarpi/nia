@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/constants/colors.dart';
-import 'package:projecte_prmbls/features/onboarding/controllers/splash_controller.dart';
+import 'package:nia_flutter/constants/colors.dart';
+import 'package:nia_flutter/features/onboarding/controllers/splash_controller.dart';
 
 class SplashScreen extends GetView<SplashController> {
   const SplashScreen({Key? key}) : super(key: key);

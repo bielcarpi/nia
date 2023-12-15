@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:projecte_prmbls/routing/app_routes.dart';
+import 'package:nia_flutter/routing/app_routes.dart';
 
 void main() async {
   // Initialize Flutter engine

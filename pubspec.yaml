@@ -1,5 +1,5 @@
-name: projecte_prmbls
-description: "Projecte Prmbls"
+name: nia_flutter
+description: "Nia Flutter"
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -31,4 +31,3 @@ flutter_native_splash:
   color: "#D91A54"
   android_12:
     color: "#D91A54"
-  web: true

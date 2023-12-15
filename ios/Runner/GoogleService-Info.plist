@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>669575167418-fe36bnkom1em7k7n81ql89trffdrdbot.apps.googleusercontent.com</string>
+	<string>669575167418-cc1asuf5pkgvsb0c03v378sg7omaiu4m.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.669575167418-fe36bnkom1em7k7n81ql89trffdrdbot</string>
+	<string>com.googleusercontent.apps.669575167418-cc1asuf5pkgvsb0c03v378sg7omaiu4m</string>
 	<key>API_KEY</key>
 	<string>AIzaSyA2j-q1nlzEWLcHz_FZBAZJn04W5GVyGtM</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.projectePrmbls</string>
+	<string>com.example.niaFlutter</string>
 	<key>PROJECT_ID</key>
 	<string>nia-ia</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:669575167418:ios:cbc5c163abfb1f04943183</string>
+	<string>1:669575167418:ios:7ac920a3ee995243943183</string>
 </dict>
 </plist>

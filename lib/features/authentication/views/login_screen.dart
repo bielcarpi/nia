@@ -22,15 +22,15 @@ class LoginScreen extends GetView<LoginController> {
                 style: Theme.of(context).textTheme.displayMedium,
               ),
               Text(
-                tr("auth.login.description"),
+                tr("Please login to continue"),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               TextFormField(
                 controller: controller.emailController,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.email),
-                  labelText: tr("auth.login.email"),
-                  hintText: tr("auth.login.email_hint"),
+                  labelText: tr("email"),
+                  //hintText: tr("auth.login.email_hint"),
                 ),
               ),
               const SizedBox(height: formSpacing),
@@ -40,8 +40,8 @@ class LoginScreen extends GetView<LoginController> {
                   obscureText: !controller.isPasswordVisible.value,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.fingerprint),
-                    labelText: tr("auth.login.password"),
-                    hintText: tr("auth.login.password_hint"),
+                    labelText: tr("password"),
+                    //hintText: tr("auth.login.password_hint"),
                     suffixIcon: IconButton(
                       icon: Icon(
                         controller.isPasswordVisible.value
@@ -58,7 +58,7 @@ class LoginScreen extends GetView<LoginController> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => controller.forgetPasswordClicked(),
-                  child: Text(tr("auth.login.forgot_password"),
+                  child: Text(tr("Did you forget your password?"),
                       style: Theme.of(context).textTheme.bodyMedium),
                 ),
               ),
@@ -68,7 +68,7 @@ class LoginScreen extends GetView<LoginController> {
                 child: ElevatedButton(
                   onPressed: () => controller.loginClicked(),
                   child: Text(
-                    tr("auth.login.login").toUpperCase(),
+                    tr("Login"),
                   ),
                 ),
               ),

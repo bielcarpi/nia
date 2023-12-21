@@ -22,7 +22,7 @@ class LoginScreen extends GetView<LoginController> {
                 style: Theme.of(context).textTheme.displayMedium,
               ),
               Text(
-                tr("Please login to continue"),
+                tr("Hello there! We missed you."),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               TextFormField(
@@ -68,7 +68,17 @@ class LoginScreen extends GetView<LoginController> {
                 child: ElevatedButton(
                   onPressed: () => controller.loginClicked(),
                   child: Text(
-                    tr("Login"),
+                    tr("Enter"),
+                  ),
+                ),
+              ),
+              const SizedBox(height: formSpacing),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => controller.signupClicked(),
+                  child: Text(
+                    tr("Register"),
                   ),
                 ),
               ),

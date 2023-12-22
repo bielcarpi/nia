@@ -4,7 +4,7 @@ import 'package:nia_flutter/features/authentication/views/forget_password_screen
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 
 import '../../core/views/home_screen.dart';
-import '../views/signup_screen.dart';
+
 
 class LoginController extends GetxController {
   final emailController = TextEditingController();
@@ -26,9 +26,6 @@ class LoginController extends GetxController {
     super.onClose();
   }
 
-  void goToSignUpScreen() {
-    Get.to(SignupScreen());
-  }
 
   void loginClicked({required String email, required String password}) async {
     errorMessage.value = ""; // Clean previous errors

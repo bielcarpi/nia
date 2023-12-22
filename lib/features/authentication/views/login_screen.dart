@@ -87,14 +87,6 @@ class LoginScreen extends GetView<LoginController> {
                     child: Text(tr("Enter")),
                   ),
                 ),
-                const SizedBox(height: formSpacing),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => controller.goToSignUpScreen(),
-                    child: Text(tr("Register")),
-                  ),
-                ),
               ],
             ),
           ),

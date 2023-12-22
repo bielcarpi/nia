@@ -22,5 +22,16 @@ class AuthDecisionController extends GetxController {
 
   void pushLoginScreen() {Get.to(LoginScreen());}
 
+  void loginWithGoogleClicked() {
+
+  }
+
+  void loginWithFacebookClicked() {
+
+  }
+
+  void loginWithAppleClicked() {
+
+  }
 
 }

@@ -25,7 +25,7 @@ class SignupController extends GetxController {
   }
 
   void registerClicked({required String email, required String password}) async {
-    errorMessage.value = ""; // Clean previous errors
+    errorMessage.value = "";
     if (await AuthenticationRepository.instance.register(email, password)) {
       Get.to(HomeScreen());
     } else {

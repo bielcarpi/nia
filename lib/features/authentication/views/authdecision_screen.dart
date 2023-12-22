@@ -10,87 +10,90 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(AuthDecisionController());
-
     return Scaffold(
-      body: Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          margin: EdgeInsets.only(bottom: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: SvgPicture.asset(
-                        "assets/social_icons/Apple.svg",
-                        height: 50,
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            margin: EdgeInsets.only(bottom: 100),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextButton.icon(
+                        icon: Center(
+                          child: SvgPicture.asset(
+                            "assets/images/social_icons/apple.svg",
+                            height: 50,
+                          ),
+                        ),
+                        onPressed: () async {
+                          // TODO: Handle Apple login
+                        },
+                        label: SizedBox.shrink(),
                       ),
-                      onPressed: () async {
-                        //TODO: Handle Apple login
-                      },
-                      label: SizedBox.shrink(),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: SvgPicture.asset(
-                        "assets/social_icons/google.svg",
-                        height: 50,
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: TextButton.icon(
+                        icon: Center(
+                          child: SvgPicture.asset(
+                            "assets/images/social_icons/google.svg",
+                            height: 50,
+                          ),
+                        ),
+                        onPressed: () async {
+                          // TODO: Handle Google login
+                        },
+                        label: SizedBox.shrink(),
                       ),
-                      onPressed: () async {
-                        //TODO: Handle Google login
-                      },
-                      label: SizedBox.shrink(),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      icon: SvgPicture.asset(
-                        "assets/social_icons/facebook.svg",
-                        height: 50,
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: TextButton.icon(
+                        icon: Center(
+                          child: SvgPicture.asset(
+                            "assets/images/social_icons/facebook.svg",
+                            height: 50,
+                          ),
+                        ),
+                        onPressed: () async {
+                          // TODO: Handle Facebook login
+                        },
+                        label: SizedBox.shrink(),
                       ),
-                      onPressed: () async {
-                        //TODO: Handle Facebook login
-                      },
-                      label: SizedBox.shrink(),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                ],
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        controller.pushSignUpScreen();
-                      },
-                      child: Text('Register'),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          controller.pushSignUpScreen();
+                        },
+                        child: Text('Register'),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        controller.pushLoginScreen();
-                      },
-                      child: Text('Login'),
+                    SizedBox(width: 20),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          controller.pushLoginScreen();
+                        },
+                        child: Text('Login'),
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 20),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

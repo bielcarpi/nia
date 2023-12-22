@@ -11,8 +11,6 @@ class SignupScreen extends GetView<SignupController> {
   @override
   Widget build(BuildContext context) {
 
-    Get.put(SignupController());
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(

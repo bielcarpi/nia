@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 import 'package:nia_flutter/routing/app_routes.dart';
 
 void main() async {
@@ -30,9 +31,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return GetMaterialApp(
       title: 'Nia',
-      initialRoute: AppRoutes.AUTHDECISION, // Initial entry point
+      initialRoute: AppRoutes.SPLASH, // Initial entry point
       getPages: AppRoutes.routes,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,

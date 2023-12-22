@@ -5,19 +5,12 @@ import 'package:nia_flutter/repository/authentication_repository/authentication_
 
 import '../../core/views/home_screen.dart';
 
-
 class LoginController extends GetxController {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  //Rx variables to observe changes
-  final errorMessage = "".obs;
+  final errorMessage = RxString("");
   final isPasswordVisible = false.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-  }
 
   @override
   void onClose() {
@@ -26,10 +19,10 @@ class LoginController extends GetxController {
     super.onClose();
   }
 
-
   void loginClicked({required String email, required String password}) async {
-    errorMessage.value = ""; // Clean previous errors
-    if (await AuthenticationRepository.instance.login(email, password)) {
+    errorMessage.value = "";
+    var success = await AuthenticationRepository.instance.login(email, password);
+    if (success) {
       Get.to(HomeScreen());
     } else {
       errorMessage.value = "Login failed";
@@ -37,7 +30,6 @@ class LoginController extends GetxController {
   }
 
   void forgetPasswordClicked() {
-    // TODO: go to forget password screen
     Get.to(ForgetPasswordScreen());
   }
 

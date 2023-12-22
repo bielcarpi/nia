@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/sizes.dart';
+import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
 
 class LoginScreen extends GetView<LoginController> {
@@ -26,6 +27,7 @@ class LoginScreen extends GetView<LoginController> {
                       onPressed: () {
                         Get.back();
                       },
+                      color: buttonPrimaryColor,
                     ),
                     Text(
                       tr("Login"),
@@ -81,6 +83,11 @@ class LoginScreen extends GetView<LoginController> {
                     onPressed: () => controller.loginClicked(
                       email: controller.emailController.text,
                       password: controller.passwordController.text,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      primary: buttonPrimaryColor,
+                      onPrimary: textButtonColor,
+                      fixedSize: Size.fromHeight(50),
                     ),
                     child: Text(tr("Enter")),
                   ),

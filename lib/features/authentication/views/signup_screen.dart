@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/authentication/controllers/signup_controller.dart';
 
 import '../../../constants/sizes.dart';
@@ -27,6 +28,7 @@ class SignupScreen extends GetView<SignupController> {
                       onPressed: () {
                         Get.back();
                       },
+                      color: buttonPrimaryColor,
                     ),
                     Text(
                       tr("Register"),
@@ -64,7 +66,7 @@ class SignupScreen extends GetView<SignupController> {
                     ),
                   );
                 }),
-                const SizedBox(height: formSpacing),
+                const SizedBox(height: formSpacingRegister),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -72,9 +74,12 @@ class SignupScreen extends GetView<SignupController> {
                       email: controller.emailController.text,
                       password: controller.passwordController.text,
                     ),
-                    child: Text(
-                      tr("Sign up"),
+                    style: ElevatedButton.styleFrom(
+                      primary: buttonPrimaryColor,
+                      onPrimary: textButtonColor,
+                      fixedSize: Size.fromHeight(50),
                     ),
+                    child: Text(tr("Sign up"),),
                   ),
                 ),
               ],

@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Nia',
-      initialRoute: AppRoutes.SPLASH, // Initial entry point
+      initialRoute: AppRoutes.AUTHDECISION, // Initial entry point
       getPages: AppRoutes.routes,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,

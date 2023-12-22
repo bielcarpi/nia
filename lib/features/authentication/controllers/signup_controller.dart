@@ -2,11 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 
+import '../../core/views/home_screen.dart';
+
 class SignupController extends GetxController {
-  //Rxn<User> _firebaseUser = Rxn<User>();
-
-  //String get user => _firebaseUser.value?.email ?? "";
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -28,7 +26,11 @@ class SignupController extends GetxController {
 
   void registerClicked({required String email, required String password}) async {
     errorMessage.value = ""; // Clean previous errors
-    AuthenticationRepository.instance.register(email, password);
+    if (await AuthenticationRepository.instance.register(email, password)) {
+      Get.to(HomeScreen());
+    } else {
+      errorMessage.value = "Register failed";
+    }
   }
 
   void passwordVisibilityClicked() {

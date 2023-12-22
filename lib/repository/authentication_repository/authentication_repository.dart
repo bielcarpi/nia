@@ -9,12 +9,15 @@ import '../../utils/validator/validator.dart';
 
 class AuthenticationRepository extends GetxController {
   static AuthenticationRepository get instance => Get.find();
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  Rxn<User> _firebaseUser = Rxn<User>();
+  String get user => _firebaseUser.value?.email ?? "";
+
   bool buttonClicked = false;
 
   bool isLoggedIn() {
-
-    return false;
+    return _firebaseUser.value != null;
   }
 
   Future<bool> signInWithGoogle(BuildContext context) async {

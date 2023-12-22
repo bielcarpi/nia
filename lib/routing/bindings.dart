@@ -6,6 +6,8 @@ import 'package:nia_flutter/features/core/controllers/home_controller.dart';
 import 'package:nia_flutter/features/onboarding/controllers/onboarding_controller.dart';
 import 'package:nia_flutter/features/onboarding/controllers/splash_controller.dart';
 
+import '../features/authentication/controllers/authdecision_controller.dart';
+
 class SplashScreenBinding extends Bindings {
   @override
   void dependencies() {
@@ -18,6 +20,13 @@ class OnboardingBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<OnboardingController>(() => OnboardingController());
+  }
+}
+
+class AuthDecisionBinding extends Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<AuthDecisionController>(() => AuthDecisionController());
   }
 }
 

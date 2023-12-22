@@ -9,6 +9,9 @@ class LoginScreen extends GetView<LoginController> {
 
   @override
   Widget build(BuildContext context) {
+
+    Get.put(LoginController());
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -17,9 +20,20 @@ class LoginScreen extends GetView<LoginController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  tr("Login"),
-                  style: Theme.of(context).textTheme.displayMedium,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Get.back();
+                      },
+                    ),
+                    Text(
+                      tr("Login"),
+                      style: Theme.of(context).textTheme.displayMedium,
+                    ),
+                  ],
                 ),
                 Text(
                   tr("Hello there! We missed you."),

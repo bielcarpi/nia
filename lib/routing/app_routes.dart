@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:nia_flutter/features/authentication/views/authdecision_screen.dart';
 import 'package:nia_flutter/features/authentication/views/forget_password_screen.dart';
 import 'package:nia_flutter/features/authentication/views/login_screen.dart';
 import 'package:nia_flutter/features/authentication/views/signup_screen.dart';
@@ -11,6 +12,7 @@ import 'package:nia_flutter/routing/middleware/auth_middleware.dart';
 class AppRoutes {
   static const SPLASH = '/';
   static const ONBOARDING = '/onboarding';
+  static const AUTHDECISION = '/authdecision';
   static const LOGIN = '/login';
   static const SIGNUP = '/signup';
   static const FORGET_PASSWORD = '/forgetPassword';
@@ -26,6 +28,11 @@ class AppRoutes {
       name: ONBOARDING,
       page: () => const OnboardingScreen(),
       binding: OnboardingBinding(),
+    ),
+    GetPage(
+        name: AUTHDECISION,
+        page: () => const AuthDecisionScreen(),
+        binding: AuthDecisionBinding(),
     ),
     GetPage(
       name: LOGIN,

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/features/authentication/views/forget_password_screen.dart';
@@ -8,11 +7,6 @@ import '../../core/views/home_screen.dart';
 import '../views/signup_screen.dart';
 
 class LoginController extends GetxController {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  Rxn<User> _firebaseUser = Rxn<User>();
-
-  //String get user => _firebaseUser.value?.email ?? "";
-
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
@@ -22,7 +16,6 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
-    //_firebaseUser.bindStream(_auth.authStateChanges()); //When the user is logged in, the _firebaseUser will be updated
     super.onInit();
   }
 
@@ -47,6 +40,7 @@ class LoginController extends GetxController {
   }
 
   void forgetPasswordClicked() {
+    // TODO: go to forget password screen
     Get.to(ForgetPasswordScreen());
   }
 

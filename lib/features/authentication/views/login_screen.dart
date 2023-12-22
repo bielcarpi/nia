@@ -11,81 +11,81 @@ class LoginScreen extends GetView<LoginController> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-          child: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(defaultSpacing),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                tr("auth.login.title"),
-                style: Theme.of(context).textTheme.displayMedium,
-              ),
-              Text(
-                tr("Hello there! We missed you."),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              TextFormField(
-                controller: controller.emailController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.email),
-                  labelText: tr("email"),
-                  //hintText: tr("auth.login.email_hint"),
+        child: SingleChildScrollView(
+          child: Container(
+            padding: const EdgeInsets.all(defaultSpacing),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tr("Login"),
+                  style: Theme.of(context).textTheme.displayMedium,
                 ),
-              ),
-              const SizedBox(height: formSpacing),
-              Obx(() {
-                return TextFormField(
-                  controller: controller.passwordController,
-                  obscureText: !controller.isPasswordVisible.value,
+                Text(
+                  tr("Hello there! We missed you."),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                TextFormField(
+                  controller: controller.emailController,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.fingerprint),
-                    labelText: tr("password"),
-                    //hintText: tr("auth.login.password_hint"),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.isPasswordVisible.value
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                    prefixIcon: const Icon(Icons.email),
+                    labelText: tr("email"),
+                  ),
+                ),
+                const SizedBox(height: formSpacing),
+                Obx(() {
+                  return TextFormField(
+                    controller: controller.passwordController,
+                    obscureText: !controller.isPasswordVisible.value,
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.fingerprint),
+                      labelText: tr("password"),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          controller.isPasswordVisible.value
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: controller.passwordVisibilityClicked,
                       ),
-                      onPressed: controller.passwordVisibilityClicked,
+                    ),
+                  );
+                }),
+                const SizedBox(height: formSpacing),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () => controller.forgetPasswordClicked(),
+                    child: Text(
+                      tr("Did you forget your password?"),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ),
-                );
-              }),
-              const SizedBox(height: formSpacing),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => controller.forgetPasswordClicked(),
-                  child: Text(tr("Did you forget your password?"),
-                      style: Theme.of(context).textTheme.bodyMedium),
                 ),
-              ),
-              const SizedBox(height: formSpacing),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => controller.loginClicked(),
-                  child: Text(
-                    tr("Enter"),
+                const SizedBox(height: formSpacing),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => controller.loginClicked(
+                      email: controller.emailController.text,
+                      password: controller.passwordController.text,
+                    ),
+                    child: Text(tr("Enter")),
                   ),
                 ),
-              ),
-              const SizedBox(height: formSpacing),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => controller.signupClicked(),
-                  child: Text(
-                    tr("Register"),
+                const SizedBox(height: formSpacing),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => controller.goToSignUpScreen(),
+                    child: Text(tr("Register")),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      )),
+      ),
     );
   }
 }

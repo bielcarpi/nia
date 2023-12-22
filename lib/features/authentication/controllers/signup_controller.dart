@@ -1,13 +1,11 @@
-import 'package:easy_localization/easy_localization.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 
 class SignupController extends GetxController {
-  Rxn<User> _firebaseUser = Rxn<User>();
+  //Rxn<User> _firebaseUser = Rxn<User>();
 
-  String get user => _firebaseUser.value?.email ?? "";
+  //String get user => _firebaseUser.value?.email ?? "";
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -28,7 +26,7 @@ class SignupController extends GetxController {
     super.onClose();
   }
 
-  void registerClicked(String email, String password) async {
+  void registerClicked({required String email, required String password}) async {
     errorMessage.value = ""; // Clean previous errors
     AuthenticationRepository.instance.register(email, password);
   }

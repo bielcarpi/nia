@@ -1,17 +1,17 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/features/authentication/views/forget_password_screen.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
-import 'package:nia_flutter/utils/validator/validator.dart';
 
+import '../../core/views/home_screen.dart';
 import '../views/signup_screen.dart';
 
 class LoginController extends GetxController {
   FirebaseAuth _auth = FirebaseAuth.instance;
   Rxn<User> _firebaseUser = Rxn<User>();
 
-  String get user => _firebaseUser.value?.email ?? "";
+  //String get user => _firebaseUser.value?.email ?? "";
 
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -22,7 +22,7 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
-    _firebaseUser.bindStream(_auth.authStateChanges()); //When the user is logged in, the _firebaseUser will be updated
+    //_firebaseUser.bindStream(_auth.authStateChanges()); //When the user is logged in, the _firebaseUser will be updated
     super.onInit();
   }
 
@@ -33,17 +33,21 @@ class LoginController extends GetxController {
     super.onClose();
   }
 
-  void signupClicked() {
+  void goToSignUpScreen() {
     Get.to(SignupScreen());
   }
 
-  void loginClicked() async {
+  void loginClicked({required String email, required String password}) async {
     errorMessage.value = ""; // Clean previous errors
-    AuthenticationRepository.instance.login(email, password);
+    if (await AuthenticationRepository.instance.login(email, password)) {
+      Get.to(HomeScreen());
+    } else {
+      errorMessage.value = "Login failed";
+    }
   }
 
   void forgetPasswordClicked() {
-    // TODO: go to forget password screen
+    Get.to(ForgetPasswordScreen());
   }
 
   void passwordVisibilityClicked() {

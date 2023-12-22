@@ -87,7 +87,7 @@ class AuthenticationRepository extends GetxController {
     if (buttonClicked) return false;
     buttonClicked = true;
 
-    if (!Validator.email(email) || !Validator.password(password)) {                       //paquet de ('package:nia_flutter/utils/validator/validator.dart')
+    if (!Validator.email(email) || !Validator.password(password)) {
       buttonClicked = false;
       return false;
     }

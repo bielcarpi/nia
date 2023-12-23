@@ -76,10 +76,15 @@ class SignupScreen extends GetView<SignupController> {
                     ),
                     style: ElevatedButton.styleFrom(
                       primary: buttonPrimaryColor,
-                      onPrimary: textButtonColor,
-                      fixedSize: Size.fromHeight(50),
+                      onPrimary: thirdColor,
+                      textStyle: const TextStyle(color: buttonPrimaryColor),
+                      fixedSize: const Size.fromHeight(50),
+                      side: BorderSide(color: buttonPrimaryColor, width: 2.0),
                     ),
-                    child: Text(tr("Sign up"),),
+                    child: Text(
+                      tr("Sign up"),
+                      style: TextStyle(color: thirdColor, fontSize: 18),
+                    ),
                   ),
                 ),
               ],

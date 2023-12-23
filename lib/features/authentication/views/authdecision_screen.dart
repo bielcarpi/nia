@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
-import 'package:nia_flutter/constants/sizes.dart';
 import 'package:nia_flutter/features/authentication/controllers/authdecision_controller.dart';
 
 class AuthDecisionScreen extends GetView<AuthDecisionController> {
@@ -12,104 +11,53 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: primaryColor,
       body: Padding(
-        padding: EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20.0),
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            margin: EdgeInsets.only(bottom: 100),
+            margin: const EdgeInsets.only(bottom: 100),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
                   tr("Welcome"),
-                  style: Theme.of(context).textTheme.displayLarge,
+                  style: Theme.of(context).textTheme.displayLarge!.copyWith(color: thirdColor),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Text(
                   tr("to Nia!"),
-                  style: Theme.of(context).textTheme.displayMedium,
+                  style: Theme.of(context).textTheme.displayMedium!.copyWith(color: thirdColor),
                 ),
-                SizedBox(height: 100),
+                const SizedBox(height: 100),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: TextButton.icon(
-                        icon: Center(
-                          child: SvgPicture.asset(
-                            "assets/images/social_icons/apple.svg",
-                            height: 50,
-                          ),
-                        ),
-                        onPressed: () async {
-                          // TODO: Handle Apple login
-                        },
-                        label: SizedBox.shrink(),
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    Expanded(
-                      child: TextButton.icon(
-                        icon: Center(
-                          child: SvgPicture.asset(
-                            "assets/images/social_icons/google.svg",
-                            height: 50,
-                          ),
-                        ),
-                        onPressed: () async {
-                          // TODO: Handle Google login
-                        },
-                        label: SizedBox.shrink(),
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    Expanded(
-                      child: TextButton.icon(
-                        icon: Center(
-                          child: SvgPicture.asset(
-                            "assets/images/social_icons/facebook.svg",
-                            height: 50,
-                          ),
-                        ),
-                        onPressed: () async {
-                          // TODO: Handle Facebook login
-                        },
-                        label: SizedBox.shrink(),
-                      ),
-                    ),
+                    customSocialButton("assets/images/social_icons/apple.svg", () {
+                      // TODO: Handle Apple login
+                    }),
+                    const SizedBox(width: 20),
+                    customSocialButton("assets/images/social_icons/google.svg", () {
+                      // TODO: Handle Google login
+                    }),
+                    const SizedBox(width: 20),
+                    customSocialButton("assets/images/social_icons/facebook.svg", () {
+                      // TODO: Handle Facebook login
+                    }),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.pushSignUpScreen();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          textStyle: TextStyle(color: buttonPrimaryColor),
-                          fixedSize: Size.fromHeight(50),
-                        ),
-                        child: Text('Register'),
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          controller.pushLoginScreen();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: buttonPrimaryColor,
-                          onPrimary: textButtonColor,
-                          fixedSize: Size.fromHeight(50),
-                        ),
-                        child: Text('Login'),
-                      ),
-                    ),
+                    customRegisterButton('Register', () {
+                      controller.pushSignUpScreen();
+                    }),
+                    const SizedBox(width: 20),
+                    customLoginButton('Login', () {
+                      controller.pushLoginScreen();
+                    }),
                   ],
                 ),
               ],
@@ -119,4 +67,58 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
       ),
     );
   }
+
+  Widget customSocialButton(String iconPath, VoidCallback onPressed) {
+    return Expanded(
+      child: TextButton.icon(
+        onPressed: onPressed,
+        icon: Center(
+          child: SvgPicture.asset(
+            iconPath,
+            height: 50,
+          ),
+        ),
+        label: const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  Widget customLoginButton(String label, VoidCallback onPressed) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          primary: thirdColor,
+          onPrimary: textColor,
+          textStyle: const TextStyle(color: buttonPrimaryColor),
+          fixedSize: const Size.fromHeight(50),
+          side: BorderSide(color: thirdColor, width: 2.0),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: textColor, fontSize: 16),
+        ),
+      ),
+    );
+  }
+
+  Widget customRegisterButton(String label, VoidCallback onPressed) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          primary: buttonPrimaryColor,
+          onPrimary: textButtonColor,
+          textStyle: const TextStyle(color: buttonPrimaryColor),
+          fixedSize: const Size.fromHeight(50),
+          side: BorderSide(color: thirdColor, width: 2.0),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: thirdColor, fontSize: 16),
+        ),
+      ),
+    );
+  }
+
 }

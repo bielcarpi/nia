@@ -86,10 +86,15 @@ class LoginScreen extends GetView<LoginController> {
                     ),
                     style: ElevatedButton.styleFrom(
                       primary: buttonPrimaryColor,
-                      onPrimary: textButtonColor,
-                      fixedSize: Size.fromHeight(50),
+                      onPrimary: thirdColor,
+                      textStyle: const TextStyle(color: buttonPrimaryColor),
+                      fixedSize: const Size.fromHeight(50),
+                      side: BorderSide(color: buttonPrimaryColor, width: 2.0),
                     ),
-                    child: Text(tr("Enter")),
+                    child: Text(
+                      tr("Enter"),
+                      style: TextStyle(color: thirdColor, fontSize: 18),
+                    ),
                   ),
                 ),
               ],

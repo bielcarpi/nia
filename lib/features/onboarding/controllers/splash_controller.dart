@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/features/authentication/controllers/authdecision_controller.dart';
+import 'package:nia_flutter/features/authentication/controllers/forget_password_controller.dart';
 import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
 import 'package:nia_flutter/features/authentication/controllers/signup_controller.dart';
 import 'package:nia_flutter/features/onboarding/controllers/onboarding_controller.dart';
@@ -32,6 +33,7 @@ class SplashController extends GetxController {
     Get.put(AnalyticsRepository(), permanent: true);
     Get.put(AuthDecisionController(), permanent: true);
     Get.put(LoginController(), permanent: true);
+    Get.put(ForgetPasswordController(), permanent: true);
     Get.put(SignupController(), permanent: true);
 
 

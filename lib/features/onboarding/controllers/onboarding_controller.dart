@@ -4,10 +4,18 @@ import 'package:nia_flutter/features/authentication/views/authdecision_screen.da
 
 class OnboardingController extends GetxController {
   final PageController pageController = PageController();
+  int clickCount = 0;
 
   @override
   void onInit() {
     super.onInit();
+    pageController.addListener(_onPageChanged);
+  }
+
+  void _onPageChanged() {
+    if (pageController.page == 3) {
+      Get.to(AuthDecisionScreen());
+    }
   }
 
   void skipClicked() {
@@ -15,10 +23,21 @@ class OnboardingController extends GetxController {
   }
 
   void nextClicked() {
-    // Iterate the onboarding screen
-    pageController.nextPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.ease,
-    );
+    clickCount++;
+
+    if (clickCount == 3) {
+      Get.to(AuthDecisionScreen());
+    } else {
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.ease,
+      );
+    }
+  }
+
+  @override
+  void onClose() {
+    pageController.dispose();
+    super.onClose();
   }
 }

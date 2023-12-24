@@ -23,12 +23,19 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
               children: [
                 Text(
                   tr("Welcome"),
-                  style: Theme.of(context).textTheme.displayLarge!.copyWith(color: thirdColor),
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                    color: thirdColor,
+                  ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 Text(
                   tr("to Nia!"),
-                  style: Theme.of(context).textTheme.displayMedium!.copyWith(color: thirdColor),
+                  style: const  TextStyle(
+                    fontSize: 30,
+                    color: thirdColor,
+                  ),
                 ),
                 const SizedBox(height: 100),
                 Row(

@@ -12,7 +12,7 @@ class SplashScreenBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<SplashController>(() => SplashController());
-    print("SplashController created");
+    print("[SYSTEM]-> SplashController created");
   }
 }
 
@@ -20,6 +20,7 @@ class OnboardingBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<OnboardingController>(() => OnboardingController());
+    print("[SYSTEM]-> OnboardingController created");
   }
 }
 
@@ -27,6 +28,7 @@ class AuthDecisionBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<AuthDecisionController>(() => AuthDecisionController());
+    print("[SYSTEM]-> AuthDecisionController created");
   }
 }
 
@@ -34,6 +36,7 @@ class LoginBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<LoginController>(() => LoginController());
+    print("[SYSTEM]-> LoginController created");
   }
 }
 
@@ -41,6 +44,7 @@ class SignUpBinding extends Bindings {
   @override
   void dependencies() {
     Get.create<SignupController>(() => SignupController());
+    print("[SYSTEM]-> SignupController created");
   }
 }
 
@@ -48,6 +52,7 @@ class ForgetPasswordBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<ForgetPasswordController>(() => ForgetPasswordController());
+    print("[SYSTEM]-> ForgetPasswordController created");
   }
 }
 
@@ -55,5 +60,6 @@ class HomeBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<HomeController>(() => HomeController());
+    print("[SYSTEM]-> HomeController created");
   }
 }

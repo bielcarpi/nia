@@ -61,7 +61,7 @@ class ForgetPasswordScreen extends GetView<ForgetPasswordController> {
                       side: BorderSide(color: buttonPrimaryColor, width: 2.0),
                     ),
                     child: Text(
-                      tr("Remember me"),
+                      tr("Reset password"),
                       style: TextStyle(color: thirdColor, fontSize: 18),
                     ),
                   ),

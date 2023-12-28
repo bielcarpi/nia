@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/features/core/controllers/home_controller.dart';
 import 'package:nia_flutter/features/profile/controllers/profile_controller.dart';
+import 'package:nia_flutter/features/timeline/controllers/timeline_controller.dart';
 import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
 
 class HomeScreen extends GetView<HomeController> {
@@ -12,6 +13,7 @@ class HomeScreen extends GetView<HomeController> {
   Widget build(BuildContext context) {
     Get.put(HomeController());
     Get.put(ProfileController());
+    Get.put(TimelineController());
 
     return Scaffold(
       appBar: AppBar(

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../features/core/controllers/home_controller.dart';
 import '../../features/core/views/home_screen.dart';
 import '../../features/profile/views/profile_screen.dart';
+import '../../features/timeline/views/timeline_screen.dart';
 
 
 class CustomBottomNavigationBar extends StatefulWidget {
@@ -25,7 +26,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
     } else if (index == 1) {
       Get.offAll(() => HomeScreen());
     } else if (index == 2) {
-      //Get.offAll(() => TimelineScreen());
+      Get.offAll(() => TimelineScreen());
     }
   }
 

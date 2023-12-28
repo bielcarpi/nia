@@ -27,12 +27,12 @@ class ProfileScreen extends GetView<ProfileController> {
                   child: Column(
                     children: <Widget>[
                       CircleAvatar(
-                        radius: 40, // Tamaño de la imagen de perfil
-                        backgroundImage: NetworkImage(profileController.userProfileImage.value), // La URL de la imagen
+                        radius: 40,
+                        backgroundImage: NetworkImage(profileController.userProfileImage.value),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        profileController.userName.value, // Nombre o correo de l'usuario
+                        profileController.userName.value,
                         style: TextStyle(color: Colors.white),
                       ),
                     ],
@@ -41,7 +41,7 @@ class ProfileScreen extends GetView<ProfileController> {
               ),
               Expanded(
                 child: ListView(
-                  children: ListTile.divideTiles( // Esta es una manera fácil de obtener líneas divisorias.
+                  children: ListTile.divideTiles(
                     context: context,
                     tiles: [
                       ListTile(

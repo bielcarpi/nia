@@ -22,7 +22,7 @@ class AuthDecisionController extends GetxController {
   void pushSignUpScreen() {Get.offNamed(AppRoutes.SIGNUP);}
   void pushLoginScreen() {Get.offNamed(AppRoutes.LOGIN);}
 
-
+/*
   Future<void> loginWithGoogleClicked() async {
     var success = await AuthenticationRepository.instance.signInWithGoogle();
     if (success) {
@@ -33,6 +33,7 @@ class AuthDecisionController extends GetxController {
       print('[SYSTEM] -> Login failed');
     }
   }
+ */
 
   void loginWithFacebookClicked() {
   }

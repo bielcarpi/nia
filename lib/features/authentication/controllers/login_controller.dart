@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/common_widgets/alerts/alerts.dart';
-import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 import 'package:nia_flutter/routing/app_routes.dart';
 

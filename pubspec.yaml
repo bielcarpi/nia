@@ -18,16 +18,19 @@ dependencies:
   firebase_auth: ^4.6.3
   firebase_core: ^2.24.2
   google_sign_in: ^6.1.4
-  flutter_facebook_auth: ^6.0.3
   sign_in_with_apple: ^5.0.0
   firebase_analytics: ^10.7.4
-  logger: ^2.0.2+1
+  logger: ^1.1.0
   flutter_svg: ^2.0.9
+  http: ^1.1.2
+  just_audio: ^0.9.36
+  flutter_sound: ^9.2.13
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 flutter:
   uses-material-design: true

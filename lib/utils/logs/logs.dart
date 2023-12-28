@@ -6,7 +6,7 @@ class Logs {
   /// The logger instance.
   static final Logger _logger = Logger(
     printer: PrettyPrinter(),
-    level: kDebugMode ? Level.all : Level.off,
+    level: kDebugMode ? Level.debug : Level.nothing,
   );
 
   /// Logs a message at level [Level.debug].

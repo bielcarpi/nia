@@ -1,9 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../utils/validator/validator.dart';
 
@@ -12,6 +10,7 @@ class AuthenticationRepository extends GetxController {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   Rxn<User> _firebaseUser = Rxn<User>();
+
   String get user => _firebaseUser.value?.email ?? "";
 
   bool buttonClicked = false;
@@ -30,7 +29,8 @@ class AuthenticationRepository extends GetxController {
         buttonClicked = false;
         return false;
       }
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -45,6 +45,7 @@ class AuthenticationRepository extends GetxController {
   }
 
   Future<bool> signInWithFacebook(BuildContext context) async {
+    /*
     if (buttonClicked) return false;
     buttonClicked = true;
 
@@ -84,6 +85,8 @@ class AuthenticationRepository extends GetxController {
       buttonClicked = false;
       return false;
     }
+     */
+    return false;
   }
 
   Future<bool> login(String email, String password) async {
@@ -115,7 +118,8 @@ class AuthenticationRepository extends GetxController {
     }
 
     try {
-      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
       buttonClicked = false;
       return true;
     } catch (e) {

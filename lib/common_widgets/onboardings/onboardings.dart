@@ -5,14 +5,14 @@ class OnboardingPage extends StatelessWidget {
   final String title;
   final String description;
   final Color contentColor;
-  // final String imagePath;
+  final String imagePath;
 
   const OnboardingPage({
     required this.color,
     required this.title,
     required this.description,
     required this.contentColor,
-    // required this.imagePath,
+    required this.imagePath,
   });
 
   @override
@@ -22,11 +22,6 @@ class OnboardingPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          /*Image.asset(
-            imagePath,
-            height: 200,
-          ),*/
-          const SizedBox(height: 20),
           Text(
             title,
             style: TextStyle(
@@ -36,6 +31,11 @@ class OnboardingPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
+          Image.asset(
+            imagePath,
+            height: 300,
+          ),
+          const SizedBox(height: 20),
           Text(
             description,
             style: TextStyle(

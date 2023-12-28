@@ -12,10 +12,10 @@ class SplashScreen extends GetView<SplashController> {
     var splashController = controller;
 
     return Scaffold(
-      backgroundColor: primaryColor,
+      backgroundColor: thirdColor,
       body: Center(
         child: Image.asset(
-          'assets/images/logo/logo.png',
+          'assets/images/logo/nia.png',
           width: 200,
           height: 200,
         ),

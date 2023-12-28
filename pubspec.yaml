@@ -34,6 +34,9 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/social_icons/
+    - assets/images/onboardings/onboarding1.png
+    - assets/images/onboardings/onboarding2.png
+    - assets/images/onboardings/onboarding3.png
     - assets/images/logo/
 
 flutter_native_splash:

@@ -25,9 +25,7 @@ class SignupScreen extends GetView<SignupController> {
                   children: [
                     IconButton(
                       icon: Icon(Icons.arrow_back),
-                      onPressed: () {
-                        Get.back();
-                      },
+                      onPressed: () {controller.backClicked();},
                       color: buttonPrimaryColor,
                     ),
                     Text(

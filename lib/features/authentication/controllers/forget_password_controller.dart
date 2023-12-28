@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/routing/app_routes.dart';
 
 class ForgetPasswordController extends GetxController {
   final emailController = TextEditingController();
@@ -19,6 +20,10 @@ class ForgetPasswordController extends GetxController {
 
   void rememberPasswordClicked({required String email}) async {
     errorMessage.value = "";
+  }
+
+  void backClicked() {
+    Get.offNamed(AppRoutes.LOGIN);
   }
 
 }

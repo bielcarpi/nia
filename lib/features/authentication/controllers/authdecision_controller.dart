@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
-import 'package:nia_flutter/features/authentication/views/login_screen.dart';
-import '../views/signup_screen.dart';
+import 'package:nia_flutter/common_widgets/alerts/alerts.dart';
+import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
+import 'package:nia_flutter/routing/app_routes.dart';
 
 class AuthDecisionController extends GetxController {
 
@@ -18,10 +19,19 @@ class AuthDecisionController extends GetxController {
     super.onClose();
   }
 
-  void pushSignUpScreen() {Get.to(SignupScreen());}
-  void pushLoginScreen() {Get.to(LoginScreen());}
+  void pushSignUpScreen() {Get.offNamed(AppRoutes.SIGNUP);}
+  void pushLoginScreen() {Get.offNamed(AppRoutes.LOGIN);}
 
-  void loginWithGoogleClicked() {
+
+  Future<void> loginWithGoogleClicked() async {
+    var success = await AuthenticationRepository.instance.signInWithGoogle();
+    if (success) {
+      Get.offNamed(AppRoutes.HOME);
+    } else {
+      errorMessage.value = "Login failed";
+      showFailedDialog(errorMessage.value, "OK", "Login with Google failed");
+      print('[SYSTEM] -> Login failed');
+    }
   }
 
   void loginWithFacebookClicked() {

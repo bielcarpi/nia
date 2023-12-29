@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import 'package:nia_flutter/features/core/controllers/home_controller.dart';
 import 'package:nia_flutter/features/profile/controllers/profile_controller.dart';
 import 'package:nia_flutter/features/timeline/controllers/timeline_controller.dart';
-
 import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
+import '../../../common_widgets/messageBubble/messageBubble.dart';
 import '../../../constants/colors.dart';
 
 class HomeScreen extends GetView<HomeController> {
@@ -25,8 +25,9 @@ class HomeScreen extends GetView<HomeController> {
             itemCount: controller.conversations.length,
             itemBuilder: (context, index) {
               final conversation = controller.conversations[index];
-              return ListTile(
-                title: Text(conversation, style: TextStyle(color: Colors.white)),
+              return MessageBubble(
+                message: conversation.content,
+                isUser: conversation.isUser,
               );
             },
           );

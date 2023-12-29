@@ -5,6 +5,7 @@ import 'package:nia_flutter/features/profile/controllers/profile_controller.dart
 import 'package:nia_flutter/features/timeline/controllers/timeline_controller.dart';
 
 import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
+import '../../../constants/colors.dart';
 
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class HomeScreen extends GetView<HomeController> {
     Get.put(TimelineController());
 
     return Scaffold(
+      backgroundColor: primaryColor,
       appBar: AppBar(
         title: const Text('What do you want to talk about?'),
       ),

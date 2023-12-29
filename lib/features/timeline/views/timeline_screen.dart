@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
+import '../../../constants/colors.dart';
 import '../controllers/timeline_controller.dart';
 
 class TimelineScreen extends GetView<TimelineController> {
@@ -13,6 +14,7 @@ class TimelineScreen extends GetView<TimelineController> {
         title: Text('Timeline'),
         backgroundColor: Colors.blue,
       ),
+      backgroundColor: primaryColor,
       body: Obx(() {
         var sortedConversations = controller.conversations
           ..sort((a, b) => b.date.compareTo(a.date));

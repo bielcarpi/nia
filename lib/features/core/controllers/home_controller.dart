@@ -12,6 +12,7 @@ class HomeController extends GetxController {
   String? filePath;
   final _audioRecorder = AudioRecorder();
   final _audioPlayer = AudioPlayerService();
+  var conversations = [].obs; // Llista on estaràn tots els missatges
 
   @override
   void onInit() {

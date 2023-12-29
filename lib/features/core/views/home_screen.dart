@@ -18,23 +18,36 @@ class HomeScreen extends GetView<HomeController> {
 
     return Scaffold(
       backgroundColor: primaryColor,
-      appBar: AppBar(
-        title: const Text('What do you want to talk about?'),
-      ),
-      body: const Center(
-        child: Text('Home Screen'),
-      ),
+      body: Obx(() {
+        if (controller.isRecording.value) {
+          // Si estem en una conversa, mostrem els missatges
+          return ListView.builder(
+            itemCount: controller.conversations.length,
+            itemBuilder: (context, index) {
+              final conversation = controller.conversations[index];
+              return ListTile(
+                title: Text(conversation, style: TextStyle(color: Colors.white)),
+              );
+            },
+          );
+        } else {
+          // Abans de comensar una conversa, mostrem això
+          return const Center(
+            child: Text('What do you want to talk about?', style: TextStyle(color: thirdColor)),
+          );
+        }
+      }),
       bottomNavigationBar: CustomBottomNavigationBar(
-          context:
-              context // Passem el controller ja que utilitzem GetView<HomeController
+        context: context,
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100), // Añade padding solo en la parte inferior
+        child: Obx(
+              () => FloatingActionButton(
+            onPressed: controller.onClickRecordButton,
+            backgroundColor: controller.isRecording.value ? Colors.red : Colors.blue,
+            child: const Icon(Icons.mic),
           ),
-      floatingActionButton: Obx(
-        () => FloatingActionButton(
-          onPressed: () {
-            controller.onClickRecordButton();
-          },
-          backgroundColor: controller.isRecording.value ? Colors.red : Colors.blue,
-          child: const Icon(Icons.mic),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

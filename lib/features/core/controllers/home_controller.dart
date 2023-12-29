@@ -1,17 +1,26 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/repository/api_repository/api_repository.dart';
 import 'package:nia_flutter/utils/audio/audio_player.dart';
 import 'package:nia_flutter/utils/audio/audio_recorder.dart';
 import 'package:nia_flutter/utils/logs/logs.dart';
+import '../../../common_widgets/messageBubble/message.dart';
+
 
 class HomeController extends GetxController {
   final isRecording = false.obs;
   String? filePath;
   final _audioRecorder = AudioRecorder();
   final _audioPlayer = AudioPlayerService();
+  //var conversations = <Message>[].obs; // Llista on estaràn tots els missatges
+
+  //Per fer la prova
+  var conversations = <Message>[
+    Message(content: "Hi, How are you?", isUser: true),
+    Message(content: "I'm good, thanks!", isUser: false),
+    Message(content: "Can we speak in English?", isUser: true),
+    Message(content: "Yes! What do you want to talk about?", isUser: false),
+  ].obs;
 
   @override
   void onInit() {

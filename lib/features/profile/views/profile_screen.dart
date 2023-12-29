@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nia_flutter/features/profile/controllers/profile_controller.dart';
 import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/constants/colors.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   final ProfileController profileController = Get.find<ProfileController>();
@@ -11,29 +12,27 @@ class ProfileScreen extends GetView<ProfileController> {
     Get.put(ProfileController());
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        elevation: 0,
-      ),
+      backgroundColor: primaryColor,
       body: Stack(
         children: [
           Column(
             children: <Widget>[
               Container(
-                color: Colors.blue,
+                //color: thirdColor,
                 width: double.infinity,
+                margin: EdgeInsets.only(top: 100),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(15.0),
                   child: Column(
                     children: <Widget>[
                       CircleAvatar(
-                        radius: 40,
+                        radius: 60,
                         backgroundImage: NetworkImage(profileController.userProfileImage.value),
                       ),
                       SizedBox(height: 8),
                       Text(
                         profileController.userName.value,
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: thirdColor),
                       ),
                     ],
                   ),
@@ -47,6 +46,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       ListTile(
                         leading: Icon(Icons.person),
                         title: Text('Mi información'),
+                        iconColor: textButtonColor,
+                        textColor: textButtonColor,
                         onTap: () {
                           // Get.to(() => InfoUserScreen());
                         },
@@ -54,6 +55,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       ListTile(
                         leading: Icon(Icons.bar_chart),
                         title: Text('Estadísticas'),
+                        iconColor: textButtonColor,
+                        textColor: textButtonColor,
                         onTap: () {
                           // Get.to(() => StadisticsScreen());
                         },
@@ -61,6 +64,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       ListTile(
                         leading: Icon(Icons.subscriptions),
                         title: Text('Suscripciones'),
+                        iconColor: textButtonColor,
+                        textColor: textButtonColor,
                         onTap: () {
                           // Get.to(() => SubscriptionsScreen());
                         },
@@ -68,6 +73,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       ListTile(
                         leading: Icon(Icons.question_answer),
                         title: Text('Preguntas'),
+                        iconColor: textButtonColor,
+                        textColor: textButtonColor,
                         onTap: () {
                           // Get.to(() => QuestionsScreen());
                         },
@@ -75,6 +82,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       ListTile(
                         leading: Icon(Icons.delete_forever),
                         title: Text('Eliminar mi cuenta y datos'),
+                        iconColor: textButtonColor,
+                        textColor: textButtonColor,
                         onTap: () {
                           // Mostrem misatge de confirmació
                           // _confirmAccountDeletion(context);
@@ -83,6 +92,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       ListTile(
                         leading: Icon(Icons.logout),
                         title: Text('Cerrar sesión'),
+                        iconColor: textButtonColor,
+                        textColor: textButtonColor,
                         onTap: () {
                           // Mostrem misatge de confirmació
                           // _confirmSignOut(context);

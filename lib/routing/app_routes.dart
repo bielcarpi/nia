@@ -8,6 +8,7 @@ import 'package:nia_flutter/features/onboarding/views/onboarding_screen.dart';
 import 'package:nia_flutter/features/onboarding/views/splash_screen.dart';
 import 'package:nia_flutter/routing/bindings.dart';
 import 'package:nia_flutter/routing/middleware/auth_middleware.dart';
+import 'package:nia_flutter/routing/middleware/logged_in_middleware.dart';
 
 class AppRoutes {
   static const SPLASH = '/';
@@ -30,26 +31,31 @@ class AppRoutes {
       name: ONBOARDING,
       page: () => const OnboardingScreen(),
       binding: OnboardingBinding(),
+      middlewares: [LoggedInMiddleware()],
     ),
     GetPage(
-        name: AUTHDECISION,
-        page: () => const AuthDecisionScreen(),
-        binding: AuthDecisionBinding(),
+      name: AUTHDECISION,
+      page: () => const AuthDecisionScreen(),
+      binding: AuthDecisionBinding(),
+      middlewares: [LoggedInMiddleware()],
     ),
     GetPage(
       name: LOGIN,
       page: () => const LoginScreen(),
       binding: LoginBinding(),
+      middlewares: [LoggedInMiddleware()],
     ),
     GetPage(
       name: SIGNUP,
       page: () => const SignupScreen(),
       binding: SignUpBinding(),
+      middlewares: [LoggedInMiddleware()],
     ),
     GetPage(
       name: FORGET_PASSWORD,
       page: () => const ForgetPasswordScreen(),
       binding: ForgetPasswordBinding(),
+      middlewares: [LoggedInMiddleware()],
     ),
     GetPage(
       name: HOME,

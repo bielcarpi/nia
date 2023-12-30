@@ -2,21 +2,19 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
-import '../../utils/validator/validator.dart';
+import 'package:nia_flutter/utils/validator/validator.dart';
 
 class AuthenticationRepository extends GetxController {
   static AuthenticationRepository get instance => Get.find();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  Rxn<User> _firebaseUser = Rxn<User>();
 
-  String get user => _firebaseUser.value?.email ?? "";
+  User get user => _auth.currentUser!;
 
   bool buttonClicked = false;
 
   bool isLoggedIn() {
-    return _firebaseUser.value != null;
+    return _auth.currentUser != null;
   }
 
   Future<bool> signInWithGoogle(BuildContext context) async {

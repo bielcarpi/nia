@@ -30,7 +30,7 @@ class AuthDecisionController extends GetxController {
     } else {
       errorMessage.value = "Login failed";
       showFailedDialog(errorMessage.value, "OK", "Login with Google failed");
-      Logs.i('[SYSTEM] -> Login failed');
+      print('[SYSTEM] -> Login failed');
     }
   }
  */

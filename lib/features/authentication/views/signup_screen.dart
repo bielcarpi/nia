@@ -68,10 +68,7 @@ class SignupScreen extends GetView<SignupController> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => controller.registerClicked(
-                      email: controller.emailController.text,
-                      password: controller.passwordController.text,
-                    ),
+                    onPressed: () => controller.registerClicked(),
                     style: ElevatedButton.styleFrom(
                       primary: buttonPrimaryColor,
                       onPrimary: thirdColor,

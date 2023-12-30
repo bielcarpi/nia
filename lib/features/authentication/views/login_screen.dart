@@ -78,10 +78,7 @@ class LoginScreen extends GetView<LoginController> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => controller.loginClicked(
-                      email: controller.emailController.text,
-                      password: controller.passwordController.text,
-                    ),
+                    onPressed: () => controller.loginClicked(),
                     style: ElevatedButton.styleFrom(
                       primary: buttonPrimaryColor,
                       onPrimary: thirdColor,

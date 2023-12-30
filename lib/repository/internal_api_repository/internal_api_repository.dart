@@ -8,6 +8,7 @@ class InternalAPIRepository extends GetxController {
 
   final API_URL = "https://nia-backend.oa.r.appspot.com/api";
   final SEND_AUDIO_ENDPOINT = "/audio";
+  final TEXT_TO_SPEECH_ENDPOINT = "/tts";
 
   Future<http.Response> sendAudio(String filePath) async {
     try {
@@ -27,5 +28,10 @@ class InternalAPIRepository extends GetxController {
       print('Error uploading file: $e');
       return http.Response('Error uploading file: $e', 500);
     }
+  }
+
+  Future<http.Response?> textToSpeech(String text) async {
+    // TODO: Implement text to speech API on backend
+    return null;
   }
 }

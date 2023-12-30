@@ -22,7 +22,7 @@ class SignupController extends GetxController {
   void registerClicked() async {
     errorMessage.value = "";
     if (await AuthenticationRepository.instance.register(emailController.text, passwordController.text)) {
-      Get.offNamed(AppRoutes.HOME);
+      Get.offNamed(AppRoutes.CORE);
     } else {
       errorMessage.value = "Register failed";
       showFailedDialog(errorMessage.value, "OK", "Email or password is incorrect. Please try again.");

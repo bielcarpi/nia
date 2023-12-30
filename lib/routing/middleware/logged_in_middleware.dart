@@ -8,7 +8,7 @@ class LoggedInMiddleware extends GetMiddleware {
   RouteSettings? redirect(String? route) {
     // Check if user is logged in. If so, redirect to home
     if (AuthenticationRepository.instance.isLoggedIn()) {
-      return const RouteSettings(name: AppRoutes.HOME);
+      return const RouteSettings(name: AppRoutes.CORE);
     }
 
     // User is not logged in, no redirection

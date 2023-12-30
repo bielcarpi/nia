@@ -3,6 +3,7 @@ import 'package:nia_flutter/features/authentication/views/authdecision_screen.da
 import 'package:nia_flutter/features/authentication/views/forget_password_screen.dart';
 import 'package:nia_flutter/features/authentication/views/login_screen.dart';
 import 'package:nia_flutter/features/authentication/views/signup_screen.dart';
+import 'package:nia_flutter/features/core/core/views/core_screen.dart';
 import 'package:nia_flutter/features/core/home/views/home_screen.dart';
 import 'package:nia_flutter/features/onboarding/views/onboarding_screen.dart';
 import 'package:nia_flutter/features/onboarding/views/splash_screen.dart';
@@ -17,9 +18,7 @@ class AppRoutes {
   static const LOGIN = '/login';
   static const SIGNUP = '/signup';
   static const FORGET_PASSWORD = '/forgetPassword';
-  static const HOME = '/home';
-  static const PROFILE = '/profile';
-  static const TIMELINE = '/timeline';
+  static const CORE = '/core';
 
   static final routes = [
     GetPage(
@@ -58,21 +57,9 @@ class AppRoutes {
       middlewares: [LoggedInMiddleware()],
     ),
     GetPage(
-      name: HOME,
-      page: () => const HomeScreen(),
-      binding: HomeBinding(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: PROFILE,
-      page: () => const HomeScreen(),
-      binding: ProfileBinding(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: TIMELINE,
-      page: () => const HomeScreen(),
-      binding: TimelineBinding(),
+      name: CORE,
+      page: () => const CoreScreen(),
+      binding: CoreBinding(),
       middlewares: [AuthMiddleware()],
     ),
   ];

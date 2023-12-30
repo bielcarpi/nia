@@ -23,7 +23,7 @@ class LoginController extends GetxController {
     errorMessage.value = "";
     var success = await AuthenticationRepository.instance.login(emailController.text, passwordController.text);
     if (success) {
-      Get.offNamed(AppRoutes.HOME);
+      Get.offNamed(AppRoutes.CORE);
     } else {
       errorMessage.value = "Login failed";
       showFailedDialog(errorMessage.value, "OK", "Email or password is incorrect. Please try again.");

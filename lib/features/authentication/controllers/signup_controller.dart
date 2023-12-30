@@ -3,8 +3,7 @@ import 'package:get/get.dart';
 import 'package:nia_flutter/common_widgets/alerts/alerts.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 import 'package:nia_flutter/routing/app_routes.dart';
-
-import '../../core/views/home_screen.dart';
+import 'package:nia_flutter/utils/logs/logs.dart';
 
 class SignupController extends GetxController {
   final emailController = TextEditingController();
@@ -13,11 +12,6 @@ class SignupController extends GetxController {
   //Rx variables to observe changes
   final errorMessage = "".obs;
   final isPasswordVisible = false.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-  }
 
   @override
   void onClose() {
@@ -30,12 +24,12 @@ class SignupController extends GetxController {
     errorMessage.value = "";
     if (await AuthenticationRepository.instance.register(email, password)) {
       Get.offNamed(AppRoutes.HOME);
-      print('[SYSTEM] -> Register success');
+      Logs.i('[SYSTEM] -> Register success');
     } else {
       errorMessage.value = "Register failed";
       showFailedDialog(errorMessage.value, "OK", "Email or password is incorrect. Please try again.");
       clearData();
-      print('[SYSTEM] -> Register failed');
+      Logs.i('[SYSTEM] -> Register failed');
     }
   }
 
@@ -44,8 +38,8 @@ class SignupController extends GetxController {
   }
 
   void backClicked() {
-    Get.offNamed(AppRoutes.AUTHDECISION);
     clearData();
+    Get.offNamed(AppRoutes.AUTHDECISION);
   }
 
   void clearData() {

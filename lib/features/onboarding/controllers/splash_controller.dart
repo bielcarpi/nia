@@ -28,13 +28,8 @@ class SplashController extends GetxController {
 
     // Initialize repositories
     Get.put(AuthenticationRepository(), permanent: true);
-    Get.put(OnboardingController(), permanent: true);
     Get.put(APIRepository(), permanent: true);
     Get.put(AnalyticsRepository(), permanent: true);
-    Get.put(AuthDecisionController(), permanent: true);
-    Get.put(LoginController(), permanent: true);
-    Get.put(ForgetPasswordController(), permanent: true);
-    Get.put(SignupController(), permanent: true);
 
 
     // Set the initial screen

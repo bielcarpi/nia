@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:nia_flutter/features/profile/controllers/profile_controller.dart';
-import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
+import 'package:nia_flutter/features/core/home/views/bottom_navigation_bar.dart';
+import 'package:nia_flutter/features/core/profile/controllers/profile_controller.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
-  final ProfileController profileController = Get.find<ProfileController>();
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Get.put(ProfileController());
-
     return Scaffold(
       backgroundColor: primaryColor,
       body: Stack(
@@ -27,11 +25,11 @@ class ProfileScreen extends GetView<ProfileController> {
                     children: <Widget>[
                       CircleAvatar(
                         radius: 60,
-                        backgroundImage: NetworkImage(profileController.userProfileImage.value),
+                        backgroundImage: NetworkImage(controller.userProfileImage.value),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        profileController.userName.value,
+                        controller.userName.value,
                         style: TextStyle(color: thirdColor),
                       ),
                     ],

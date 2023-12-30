@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../common_widgets/bottomNavigationBar/bottomNavigationBar.dart';
-import '../../../constants/colors.dart';
-import '../controllers/timeline_controller.dart';
+import 'package:nia_flutter/constants/colors.dart';
+import 'package:nia_flutter/features/core/home/views/bottom_navigation_bar.dart';
+import 'package:nia_flutter/features/core/timeline/controllers/timeline_controller.dart';
 
 class TimelineScreen extends GetView<TimelineController> {
+  const TimelineScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
-    Get.put(TimelineController());
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Timeline'),

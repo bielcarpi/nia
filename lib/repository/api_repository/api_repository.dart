@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:http/src/multipart_file.dart' as mpt;
+import 'package:nia_flutter/utils/logs/logs.dart';
 
 class APIRepository extends GetxController {
   static APIRepository get instance => Get.find();
@@ -15,18 +16,18 @@ class APIRepository extends GetxController {
     try {
       var response = await request.send();
       if (response.statusCode != 200) {
-        print('Error occurred while sending audio: ${response.statusCode}');
+        Logs.e('Error occurred while sending audio: ${response.statusCode}');
 
         // Get the response body
         var responseBody = await response.stream.bytesToString();
-        print('Response body: $responseBody');
+        Logs.e('Response body: $responseBody');
 
         return null;
       }
 
       return response;
     } catch (e) {
-      print('Error occurred while sending audio: $e');
+      Logs.e('Error occurred while sending audio: $e');
       return null;
     }
   }

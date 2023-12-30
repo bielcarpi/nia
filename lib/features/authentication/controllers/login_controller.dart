@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:nia_flutter/common_widgets/alerts/alerts.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
 import 'package:nia_flutter/routing/app_routes.dart';
+import 'package:nia_flutter/utils/logs/logs.dart';
 
 
 class LoginController extends GetxController {
@@ -24,12 +25,12 @@ class LoginController extends GetxController {
     var success = await AuthenticationRepository.instance.login(email, password);
     if (success) {
       Get.offNamed(AppRoutes.HOME);
-      print('[SYSTEM] -> Login success');
+      Logs.i('[SYSTEM] -> Login success');
     } else {
       errorMessage.value = "Login failed";
       showFailedDialog(errorMessage.value, "OK", "Email or password is incorrect. Please try again.");
       clearData();
-      print('[SYSTEM] -> Login failed');
+      Logs.i('[SYSTEM] -> Login failed');
     }
   }
 

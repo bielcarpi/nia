@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../features/core/controllers/home_controller.dart';
-import '../../features/core/views/home_screen.dart';
-import '../../features/profile/views/profile_screen.dart';
-import '../../features/timeline/views/timeline_screen.dart';
+import 'package:nia_flutter/routing/app_routes.dart';
 
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final BuildContext context;
-  CustomBottomNavigationBar({Key? key, required this.context}) : super(key: key);
+  const CustomBottomNavigationBar({super.key, required this.context});
 
   @override
   _CustomBottomNavigationBarState createState() => _CustomBottomNavigationBarState();
@@ -22,11 +19,11 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       _selectedIndex = index;
     });
     if (index == 0) {
-      Get.offAll(() => ProfileScreen());
+      Get.offAllNamed(AppRoutes.PROFILE);
     } else if (index == 1) {
-      Get.offAll(() => HomeScreen());
+      Get.offAllNamed(AppRoutes.HOME);
     } else if (index == 2) {
-      Get.offAll(() => TimelineScreen());
+      Get.offAllNamed(AppRoutes.TIMELINE);
     }
   }
 

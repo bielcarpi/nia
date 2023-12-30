@@ -1,35 +1,35 @@
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 
-class AudioRecorder {
-  FlutterSoundRecorder? _audioRecorder;
-  bool _isRecorderInitialized = false;
-
-  Future<void> init() async {
-    _audioRecorder = FlutterSoundRecorder();
-
-    await _audioRecorder!.openRecorder();
-    _isRecorderInitialized = true;
-  }
+class AudioRecorderService {
+  final _audioRecorder = AudioRecorder();
+  bool _isRecording = false;
 
   Future<String?> startRecording() async {
-    if (!_isRecorderInitialized) return null;
+    if (_isRecording) {
+      throw Exception('Recording is already started.');
+    }
 
+    _isRecording = true;
     final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/temp_recording.aac';
-    await _audioRecorder!.startRecorder(toFile: path);
+    final path = '${dir.path}/tmp.m4a';
+    RecordConfig config = const RecordConfig(
+      encoder: AudioEncoder.aacLc,
+      bitRate: 128000,
+      sampleRate: 44100,
+      numChannels: 2,
+    );
+
+    await _audioRecorder.start(config, path: path);
     return path;
   }
 
   Future<void> stopRecording() async {
-    await _audioRecorder!.stopRecorder();
-  }
-
-  void dispose() {
-    if (_audioRecorder != null) {
-      _audioRecorder!.closeRecorder();
-      _audioRecorder = null;
+    if (!_isRecording) {
+      throw Exception('Recording is not started.');
     }
-    _isRecorderInitialized = false;
+
+    _isRecording = false;
+    await _audioRecorder.stop();
   }
 }

@@ -1,22 +1,19 @@
 import 'dart:io';
 
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AudioPlayerService {
   final _audioPlayer = AudioPlayer();
 
-  Future<void> playAudioFromResponse(StreamedResponse response) async {
+  Future<void> playAudioFromResponse(http.Response response) async {
     // Create a file to store the response
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}response_audio.ogg');
-    final fileStream = file.openWrite();
+    final file = File('${dir.path}response_audio.aac');
 
-    // Write the response stream to the file
-    await response.stream.pipe(fileStream);
-    await fileStream.flush();
-    await fileStream.close();
+    // Write the response to the file
+    await file.writeAsBytes(response.bodyBytes);
 
     // Play the audio
     try {
@@ -29,10 +26,5 @@ class AudioPlayerService {
 
   void dispose() {
     _audioPlayer.dispose();
-  }
-
-  void playAudioFromLocalFile(String s) {
-    _audioPlayer.setFilePath(s);
-    _audioPlayer.play();
   }
 }

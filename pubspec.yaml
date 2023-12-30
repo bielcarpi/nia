@@ -24,8 +24,8 @@ dependencies:
   flutter_svg: ^2.0.9
   http: ^1.1.2
   just_audio: ^0.9.36
-  flutter_sound: ^9.2.13
   path_provider: ^2.1.1
+  record: ^5.0.4
 
 dev_dependencies:
   flutter_test:

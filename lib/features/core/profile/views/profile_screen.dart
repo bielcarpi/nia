@@ -13,7 +13,7 @@ class ProfileScreen extends StatelessWidget {
     return Column(
       children: <Widget>[
         Container(
-          //color: thirdColor,
+          color: thirdColor,
           width: double.infinity,
           margin: EdgeInsets.only(top: 100),
           child: Padding(
@@ -28,7 +28,7 @@ class ProfileScreen extends StatelessWidget {
                 SizedBox(height: 8),
                 Text(
                   controller.userName.value,
-                  style: TextStyle(color: thirdColor),
+                  style: TextStyle(color: buttonPrimaryColor),
                 ),
               ],
             ),
@@ -42,8 +42,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.person),
                   title: Text('Mi información'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: buttonPrimaryColor,
+                  textColor: buttonPrimaryColor,
                   onTap: () {
                     // Get.to(() => InfoUserScreen());
                   },
@@ -51,8 +51,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.bar_chart),
                   title: Text('Estadísticas'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: buttonPrimaryColor,
+                  textColor: buttonPrimaryColor,
                   onTap: () {
                     // Get.to(() => StadisticsScreen());
                   },
@@ -60,8 +60,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.subscriptions),
                   title: Text('Suscripciones'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: buttonPrimaryColor,
+                  textColor: buttonPrimaryColor,
                   onTap: () {
                     // Get.to(() => SubscriptionsScreen());
                   },
@@ -69,8 +69,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.question_answer),
                   title: Text('Preguntas'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: buttonPrimaryColor,
+                  textColor: buttonPrimaryColor,
                   onTap: () {
                     // Get.to(() => QuestionsScreen());
                   },
@@ -78,8 +78,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.delete_forever),
                   title: Text('Eliminar mi cuenta y datos'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: buttonPrimaryColor,
+                  textColor: buttonPrimaryColor,
                   onTap: () {
                     // Mostrem misatge de confirmació
                     // _confirmAccountDeletion(context);
@@ -88,11 +88,13 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.logout),
                   title: Text('Cerrar sesión'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: buttonPrimaryColor,
+                  textColor: buttonPrimaryColor,
                   onTap: () {
                     // Mostrem misatge de confirmació
-                    // _confirmSignOut(context);
+                    // Call the signOut function from the controller
+                    controller.signOut();
+                    //TODO _confirmSignOut(context);
                   },
                 ),
               ],

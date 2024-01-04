@@ -2,9 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
+import 'package:nia_flutter/constants/sizes.dart';
 import 'package:nia_flutter/features/authentication/controllers/signup_controller.dart';
-
-import '../../../constants/sizes.dart';
 
 class SignupScreen extends GetView<SignupController> {
   const SignupScreen({super.key});

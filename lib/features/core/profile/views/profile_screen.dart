@@ -6,9 +6,13 @@ import 'package:nia_flutter/features/core/profile/controllers/profile_controller
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     var controller = Get.put(ProfileController());
+    String imageUrl =
+        'https://static.thenounproject.com/png/3445536-200.png'; //Placeholder image
+    bool imageUpdated = false;
 
     return Column(
       children: <Widget>[
@@ -20,8 +24,8 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 GestureDetector(
-                  onTap: () {
-                    controller.selectImage();
+                  onTap: () async {
+                    var image = await controller.selectImage();
                   },
                   child: CircleAvatar(
                     radius: 60,

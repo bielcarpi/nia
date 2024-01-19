@@ -23,7 +23,6 @@ class ProfileController extends GetxController {
     var success = await BucketRepository.instance.uploadImage(pickedFile);
 
     print('Image uploaded correctly');
-
     return success;
   }
 

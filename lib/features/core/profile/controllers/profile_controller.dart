@@ -6,6 +6,9 @@ import '../../../../utils/image_picker.dart';
 import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
 import 'package:nia_flutter/features/authentication/views/login_screen.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
+import 'package:nia_flutter/features/onboarding/views/onboarding_screen.dart';
+
+import '../../../onboarding/controllers/onboarding_controller.dart';
 
 class ProfileController extends GetxController {
   final RxString userProfileImage = 'https://via.placeholder.com/150'.obs;
@@ -30,7 +33,8 @@ class ProfileController extends GetxController {
 
 
   void goToInformation() {
-    // Get.to(() => UserInformationScreen());
+    Get.lazyPut(()=> OnboardingController());
+    Get.offAll(() => OnboardingScreen());
   }
 
   void goToStatistics() {

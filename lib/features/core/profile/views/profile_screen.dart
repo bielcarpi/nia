@@ -52,12 +52,12 @@ class ProfileScreen extends StatelessWidget {
               context: context,
               tiles: [
                 ListTile(
-                  leading: Icon(Icons.person),
-                  title: Text('Mi información'),
+                  leading: Icon(Icons.info_outline),
+                  title: Text('Información sobre Nia'),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Get.to(() => InfoUserScreen());
+                    controller.goToInformation();
                   },
                 ),
                 ListTile(

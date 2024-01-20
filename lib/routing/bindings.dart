@@ -38,7 +38,7 @@ class LoginBinding extends Bindings {
 class SignUpBinding extends Bindings {
   @override
   void dependencies() {
-    Get.create<SignupController>(() => SignupController());
+    Get.lazyPut<SignupController>(() => SignupController());
   }
 }
 

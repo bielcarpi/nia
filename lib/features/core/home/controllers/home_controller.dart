@@ -27,16 +27,10 @@ class HomeController extends GetxController {
     isRecording.value = !isRecording.value;
 
     if (isRecording.value) {
-      filePath = await _audioRecorder.startRecording();
+      InternalAPIRepository.instance.initWebSocket();
+      InternalAPIRepository.instance.startRecording();
     } else {
-      await _audioRecorder.stopRecording();
-
-      if (filePath != null) {
-        var response = await InternalAPIRepository.instance.sendAudio(filePath!);
-        if (response.statusCode == 200) {
-          _audioPlayer.playAudioFromResponse(response);
-        }
-      }
+      InternalAPIRepository.instance.stopRecording();
     }
   }
 }

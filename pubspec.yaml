@@ -20,12 +20,12 @@ dependencies:
   google_sign_in: ^6.1.4
   sign_in_with_apple: ^5.0.0
   firebase_analytics: ^10.7.4
-  logger: ^1.1.0
   flutter_svg: ^2.0.9
   http: ^1.1.2
-  just_audio: ^0.9.36
   path_provider: ^2.1.1
-  record: ^5.0.4
+  web_socket_channel: ^2.4.0
+  flutter_sound: ^9.2.13
+  logger: ^1.4.0
 
 dev_dependencies:
   flutter_test:

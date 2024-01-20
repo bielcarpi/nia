@@ -18,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
       children: <Widget>[
         Container(
           width: double.infinity,
-          margin: EdgeInsets.only(top: 100),
+          margin: EdgeInsets.only(top: 60),
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: Column(
@@ -35,7 +35,7 @@ class ProfileScreen extends StatelessWidget {
                       child: CircleAvatar(
                         backgroundColor: primaryColor,
                         radius: 20,
-                        child: Icon(Icons.camera_alt, size: 20, color: Colors.black),
+                        child: Icon(Icons.camera_alt, size: 20, color: thirdColor),
                       ),
                     ),
                   ),
@@ -43,7 +43,7 @@ class ProfileScreen extends StatelessWidget {
                 SizedBox(height: 8),
                 Text(
                   controller.userName.value,
-                  style: TextStyle(color: thirdColor),
+                  style: TextStyle(color: primaryColor),
                 ),
               ],
             ),

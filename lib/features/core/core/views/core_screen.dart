@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/core/core/controllers/core_controller.dart';
 import 'package:nia_flutter/features/core/home/views/home_screen.dart';
 import 'package:nia_flutter/features/core/profile/views/profile_screen.dart';
@@ -12,7 +13,7 @@ class CoreScreen extends GetView<CoreController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nia'),
+        title: const Text('NIA', style: TextStyle(color: primaryColor)),
         automaticallyImplyLeading: false,
       ),
       body: Obx(() {
@@ -26,6 +27,9 @@ class CoreScreen extends GetView<CoreController> {
       }),
       bottomNavigationBar: Obx( () =>
         BottomNavigationBar(
+          backgroundColor: primaryColor,
+          unselectedItemColor: thirdColor,
+          selectedItemColor: selectedIcon,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.account_circle),

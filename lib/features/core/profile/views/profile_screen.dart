@@ -6,6 +6,7 @@ import 'package:nia_flutter/features/core/profile/controllers/profile_controller
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+
   @override
   Widget build(BuildContext context) {
     var controller = Get.put(ProfileController());
@@ -13,22 +14,33 @@ class ProfileScreen extends StatelessWidget {
     return Column(
       children: <Widget>[
         Container(
-          //color: thirdColor,
           width: double.infinity,
-          margin: EdgeInsets.only(top: 100),
+          margin: EdgeInsets.only(top: 60),
           child: Padding(
             padding: const EdgeInsets.all(15.0),
             child: Column(
               children: <Widget>[
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage:
-                      NetworkImage(controller.userProfileImage.value),
+                GestureDetector(
+                  onTap: () async {
+                    var image = await controller.selectImage();
+                  },
+                  child: CircleAvatar(
+                    radius: 60,
+                    backgroundImage: NetworkImage(controller.userProfileImage.value),
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: CircleAvatar(
+                        backgroundColor: primaryColor,
+                        radius: 20,
+                        child: Icon(Icons.camera_alt, size: 20, color: thirdColor),
+                      ),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 8),
                 Text(
                   controller.userName.value,
-                  style: TextStyle(color: thirdColor),
+                  style: TextStyle(color: primaryColor),
                 ),
               ],
             ),
@@ -42,8 +54,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.person),
                   title: Text('Mi información'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: primaryColor,
+                  textColor: primaryColor,
                   onTap: () {
                     // Get.to(() => InfoUserScreen());
                   },
@@ -51,8 +63,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.bar_chart),
                   title: Text('Estadísticas'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: primaryColor,
+                  textColor: primaryColor,
                   onTap: () {
                     // Get.to(() => StadisticsScreen());
                   },
@@ -60,8 +72,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.subscriptions),
                   title: Text('Suscripciones'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: primaryColor,
+                  textColor: primaryColor,
                   onTap: () {
                     // Get.to(() => SubscriptionsScreen());
                   },
@@ -69,8 +81,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.question_answer),
                   title: Text('Preguntas'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: primaryColor,
+                  textColor: primaryColor,
                   onTap: () {
                     // Get.to(() => QuestionsScreen());
                   },
@@ -78,8 +90,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.delete_forever),
                   title: Text('Eliminar mi cuenta y datos'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: primaryColor,
+                  textColor: primaryColor,
                   onTap: () {
                     // Mostrem misatge de confirmació
                     // _confirmAccountDeletion(context);
@@ -88,8 +100,8 @@ class ProfileScreen extends StatelessWidget {
                 ListTile(
                   leading: Icon(Icons.logout),
                   title: Text('Cerrar sesión'),
-                  iconColor: textButtonColor,
-                  textColor: textButtonColor,
+                  iconColor: primaryColor,
+                  textColor: primaryColor,
                   onTap: () {
                     // Mostrem misatge de confirmació
                     // _confirmSignOut(context);

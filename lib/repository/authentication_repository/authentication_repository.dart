@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logger/logger.dart';
 import 'package:nia_flutter/utils/validator/validator.dart';
 
 class AuthenticationRepository extends GetxController {
@@ -15,6 +16,15 @@ class AuthenticationRepository extends GetxController {
 
   bool isLoggedIn() {
     return _auth.currentUser != null;
+  }
+
+  Future<void> firebaseAuthSignOut() async {
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      // Handle sign-out errors if needed
+      Logger().e(e);
+    }
   }
 
   Future<bool> signInWithGoogle(BuildContext context) async {

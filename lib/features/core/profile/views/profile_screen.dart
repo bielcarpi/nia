@@ -104,7 +104,9 @@ class ProfileScreen extends StatelessWidget {
                   textColor: primaryColor,
                   onTap: () {
                     // Mostrem misatge de confirmació
-                    // _confirmSignOut(context);
+                    // Call the signOut function from the controller
+                    controller.signOut();
+                    //TODO _confirmSignOut(context);
                   },
                 ),
               ],

@@ -10,9 +10,6 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var controller = Get.put(ProfileController());
-    String imageUrl =
-        'https://static.thenounproject.com/png/3445536-200.png'; //Placeholder image
-    bool imageUpdated = false;
 
     return Column(
       children: <Widget>[

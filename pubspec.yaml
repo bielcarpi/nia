@@ -26,6 +26,9 @@ dependencies:
   web_socket_channel: ^2.4.0
   flutter_sound: ^9.2.13
   logger: ^1.4.0
+  image_picker: ^0.8.0+4
+  firebase_storage: ^11.6.0
+  cloud_firestore: ^4.14.0
 
 dev_dependencies:
   flutter_test:

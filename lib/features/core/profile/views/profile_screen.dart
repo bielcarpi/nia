@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/core/profile/controllers/profile_controller.dart';
+import 'package:nia_flutter/features/core/profile/views/questions_view.dart';
 import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -72,11 +73,11 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.question_answer),
-                  title: Text('Preguntas'),
+                  title: Text('Preguntas Frecuentes'),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Get.to(() => QuestionsScreen());
+                    Get.to(() => questionsView());
                   },
                 ),
                 ListTile(

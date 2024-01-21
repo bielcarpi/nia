@@ -27,6 +27,9 @@ dependencies:
   logger: ^2.0.2+1
   record: ^5.0.4
   just_audio: ^0.9.36
+  image_picker: ^0.8.0+4
+  firebase_storage: ^11.6.0
+  cloud_firestore: ^4.14.0
 
 dev_dependencies:
   flutter_test:

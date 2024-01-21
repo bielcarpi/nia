@@ -8,4 +8,5 @@ const textButtonColor = Color(0xFFFFFFFF);
 const buttonPrimaryColor = Color(0xFF0967D7);
 const messageBubble = Color(0xFF123F76);
 const selectedIcon = Color(0xFF88B8FF);
+const transparentBlue = Color(0xFF6F98FF);
 

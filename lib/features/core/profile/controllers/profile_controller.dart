@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nia_flutter/features/core/profile/views/niaInformation.dart';
 import '../../../../repository/bucket_repository/bucket_repository.dart';
 import '../../../../utils/image_picker.dart';
 import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
 import 'package:nia_flutter/features/authentication/views/login_screen.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
-import 'package:nia_flutter/features/onboarding/views/onboarding_screen.dart';
 
-import '../../../onboarding/controllers/onboarding_controller.dart';
 
 class ProfileController extends GetxController {
   final RxString userProfileImage = 'https://via.placeholder.com/150'.obs;
@@ -33,8 +32,7 @@ class ProfileController extends GetxController {
 
 
   void goToInformation() {
-    Get.lazyPut(()=> OnboardingController());
-    Get.offAll(() => OnboardingScreen());
+    Get.to(() => niaInformation());
   }
 
   void goToStatistics() {

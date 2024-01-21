@@ -10,60 +10,64 @@ class SignupScreen extends GetView<SignupController> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
             padding: const EdgeInsets.all(defaultSpacing),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: () {controller.backClicked();},
-                      color: buttonPrimaryColor,
-                    ),
-                    Text(
-                      tr("Register"),
-                      style: Theme.of(context).textTheme.displayMedium,
-                    ),
-                  ],
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: () { controller.backClicked(); },
+                    color: buttonPrimaryColor,
+                  ),
                 ),
                 Text(
-                  tr("Hello! We are glad to see you."),
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  tr("Register"),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(color: primaryColor, fontWeight: FontWeight.bold),
                 ),
+                SizedBox(height: formSpacing),
+                Text(
+                  tr("Hello! We are glad to see you."),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: primaryColor),
+                ),
+                SizedBox(height: 20),
                 TextFormField(
                   controller: controller.emailController,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email, color: transparentBlue),
                     labelText: tr("email"),
+                    labelStyle: TextStyle(color: transparentBlue),
                   ),
                 ),
-                const SizedBox(height: formSpacing),
+                SizedBox(height: formSpacing),
                 Obx(() {
                   return TextFormField(
                     controller: controller.passwordController,
                     obscureText: !controller.isPasswordVisible.value,
                     decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.fingerprint),
+                      prefixIcon: const Icon(Icons.lock, color: transparentBlue),
                       labelText: tr("password"),
+                      labelStyle: TextStyle(color: transparentBlue),
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordVisible.value
                               ? Icons.visibility
                               : Icons.visibility_off,
+                          color: transparentBlue,
                         ),
                         onPressed: controller.passwordVisibilityClicked,
                       ),
                     ),
                   );
                 }),
-                const SizedBox(height: formSpacingRegister),
+                SizedBox(height: formSpacingRegister),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

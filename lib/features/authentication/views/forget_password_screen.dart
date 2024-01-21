@@ -16,35 +16,37 @@ class ForgetPasswordScreen extends GetView<ForgetPasswordController> {
           child: Container(
             padding: const EdgeInsets.all(defaultSpacing),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back),
-                      onPressed: () {controller.backClicked();},
-                      color: buttonPrimaryColor,
-                    ),
-                    Text(
-                      tr("Forgot your password?"),
-                      style: Theme.of(context).textTheme.displayMedium,
-                    ),
-                  ],
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: () { controller.backClicked(); },
+                    color: buttonPrimaryColor,
+                  ),
                 ),
                 Text(
-                  tr("Hello! Please complete the gaps to remember your password."),
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  tr("Forgot your password?"),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.displayMedium?.copyWith(color: primaryColor, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: formSpacing),
+                SizedBox(height: formSpacing),
+                Text(
+                  tr("Hello! Please complete the gaps to remember your password."),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: primaryColor),
+                ),
+                SizedBox(height: 20),
                 TextFormField(
                   controller: controller.emailController,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email, color: transparentBlue),
                     labelText: tr("email"),
+                    labelStyle: TextStyle(color: transparentBlue),
                   ),
                 ),
-                const SizedBox(height: formSpacingRegister),
+                SizedBox(height: formSpacingRegister),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

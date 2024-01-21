@@ -24,8 +24,9 @@ dependencies:
   http: ^1.1.2
   path_provider: ^2.1.1
   web_socket_channel: ^2.4.0
-  flutter_sound: ^9.2.13
-  logger: ^1.4.0
+  logger: ^2.0.2+1
+  record: ^5.0.4
+  just_audio: ^0.9.36
 
 dev_dependencies:
   flutter_test:

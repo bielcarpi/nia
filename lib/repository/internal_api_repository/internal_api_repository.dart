@@ -1,42 +1,56 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:get/get.dart';
-import 'package:logger/logger.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:nia_flutter/utils/logs/logs.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:record/record.dart';
 import 'package:web_socket_channel/io.dart';
 
 class InternalAPIRepository extends GetxController {
   static InternalAPIRepository get instance => Get.find();
 
-  final API_URL = "wss://nia-backend.oa.r.appspot.com/api";
+  //final API_URL = "wss://nia-backend.oa.r.appspot.com/api";
+  final API_URL = "ws://localhost:8080/api";
   final SEND_AUDIO_ENDPOINT = "/audio";
   final TEXT_TO_SPEECH_ENDPOINT = "/tts";
 
   IOWebSocketChannel? channel;
-  FlutterSoundRecorder? audioRecorder;
-  FlutterSoundPlayer? audioPlayer;
-  StreamController<Food> streamController = StreamController<Food>();
+  AudioRecorder recorder = AudioRecorder();
+  AudioPlayer player = AudioPlayer();
   bool isRecording = false;
+  String? recordingPath;
+  String? playingPath;
 
   // Initialize WebSocket connection
-  void initWebSocket() {
+  Future<void> initWebSocket() async {
     channel =
         IOWebSocketChannel.connect(Uri.parse(API_URL + SEND_AUDIO_ENDPOINT));
+
+    await channel?.ready;
+    var tempDir = await getTemporaryDirectory();
+    playingPath = "${tempDir.path}/received.aac";
+    List<Uint8List> chunks = [];
+    var tempFile = File(playingPath!);
+
     channel!.stream.listen(
-      (data) {
-        print('Received data: $data');
+      (data) async {
         if (data is String) {
           processTextData(data);
         } else if (data is Uint8List) {
-          _playAudioStream(data);
+          print('Received audio data. Chunk size: ${data.length}');
+          chunks.add(data); // Receive on RAM
         }
       },
-      onDone: () {
-        print('Connection closed');
-        print(channel!.closeCode);
-        print(channel!.closeReason);
+      onDone: () async {
+        // Save chunks to file, then play
+        for (var chunk in chunks) {
+          await tempFile.writeAsBytes(chunk, mode: FileMode.append);
+        }
+        await player.setFilePath(playingPath!);
+        await player.play();
       },
       onError: (error) {
         print('Error: $error');
@@ -46,57 +60,54 @@ class InternalAPIRepository extends GetxController {
 
   // Start recording and sending audio data
   void startRecording() async {
-    audioRecorder = FlutterSoundRecorder(logLevel: Level.nothing);
-    await audioRecorder!.openRecorder();
+    if (!await recorder.hasPermission()) {
+      print('You must accept permission to record audio');
+    }
 
-    // Listen to the stream and send data over WebSocket
-    streamController.stream.listen((buffer) {
-      if (buffer is FoodData) {
-        print("Sending ${buffer.data!.length} bytes of audio data",);
-        channel!.sink.add(buffer.data!);
-      }
-    });
+    if (!isRecording) {
+      isRecording = true;
 
-    print("Starting recorder...");
-    audioRecorder!.startRecorder(
-      toStream: streamController.sink,
-      codec: Codec.pcm16,
-    );
-    isRecording = true;
+      /*
+      //TODO Implement Whisper on backend that supports PCM16 encoding
+      final stream = await recorder.startStream(const RecordConfig(
+        encoder: AudioEncoder.pcm16bits,
+      ));
+
+      stream.listen((data) {
+        print('Sending audio data. Chunk size: ${data.length}');
+        channel!.sink.add(data);
+      });
+       */
+
+      //For now, use M4A
+      var tempPath = await getTemporaryDirectory();
+      recordingPath = '${tempPath.path}/audio.m4a';
+
+      await recorder.start(
+          const RecordConfig(
+            encoder: AudioEncoder.aacLc,
+          ),
+          path: recordingPath!);
+    }
   }
 
   // Stop recording
   void stopRecording() async {
     if (isRecording) {
-      await audioRecorder!.stopRecorder();
-      await audioRecorder!.closeRecorder();
-      streamController.close(); // Close the stream controller
+      await recorder.stop();
+
+      //For now, send M4A file (TODO Implement PCM16 on backend)
+      print('Sending audio file: $recordingPath');
+      channel!.sink.add(await File(recordingPath!).readAsBytes());
 
       print('Sending END_OF_AUDIO');
       channel!.sink.add("END_OF_AUDIO");
 
-      audioRecorder = null;
       isRecording = false;
     }
-  } // Process received text data
+  }
 
   void processTextData(String text) {
     Logs.d("Received text: $text");
-  }
-
-  // Play audio data as it's received
-  void _playAudioStream(Uint8List audioData) async {
-    if (audioPlayer == null) {
-      audioPlayer = FlutterSoundPlayer();
-      await audioPlayer!.openPlayer();
-    }
-    await audioPlayer!.startPlayer(fromDataBuffer: audioData);
-  }
-
-  // Clean up resources
-  void dispose() {
-    if (isRecording) stopRecording();
-    audioPlayer?.closePlayer();
-    channel?.sink.close();
   }
 }

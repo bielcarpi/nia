@@ -27,7 +27,7 @@ class HomeController extends GetxController {
     isRecording.value = !isRecording.value;
 
     if (isRecording.value) {
-      InternalAPIRepository.instance.initWebSocket();
+      await InternalAPIRepository.instance.initWebSocket();
       InternalAPIRepository.instance.startRecording();
     } else {
       InternalAPIRepository.instance.stopRecording();

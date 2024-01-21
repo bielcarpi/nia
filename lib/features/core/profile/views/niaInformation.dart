@@ -49,7 +49,6 @@ class niaInformation extends StatelessWidget {
                     '\t4) Participa en actividades y juegos lingüísticos diseñados para reforzar tu aprendizaje.\n\n'
                     '\t5) Practica con una variedad de idiomas, cada uno con su propio conjunto de lecciones y desafíos.',
                 style: TextStyle(fontSize: 14),
-                textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nia_flutter/features/core/profile/views/niaInformation.dart';
+import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
 import '../../../../repository/bucket_repository/bucket_repository.dart';
 import '../../../../utils/image_picker.dart';
 import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
@@ -35,12 +36,8 @@ class ProfileController extends GetxController {
     Get.to(() => niaInformation());
   }
 
-  void goToStatistics() {
-    // Get.to(() => StatisticsScreen());
-  }
-
-  void goToSuscription() {
-    // Get.to(() => SuscriptionScreen());
+  void goToSubscription() {
+    Get.to(() => subscriptionView());
   }
 
   void goToQuestions() {

@@ -12,8 +12,7 @@ import 'package:web_socket_channel/io.dart';
 class InternalAPIRepository extends GetxController {
   static InternalAPIRepository get instance => Get.find();
 
-  //final API_URL = "wss://nia-backend.oa.r.appspot.com/api";
-  final API_URL = "ws://localhost:8080/api";
+  final API_URL = "wss://nia-backend.oa.r.appspot.com/api";
   final SEND_AUDIO_ENDPOINT = "/audio";
   final TEXT_TO_SPEECH_ENDPOINT = "/tts";
 

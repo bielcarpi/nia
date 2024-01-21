@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 import 'package:nia_flutter/utils/logs/logs.dart';
 import 'package:web_socket_channel/io.dart';
@@ -23,46 +22,49 @@ class InternalAPIRepository extends GetxController {
 
   // Initialize WebSocket connection
   void initWebSocket() {
-    channel = IOWebSocketChannel.connect(Uri.parse(API_URL + SEND_AUDIO_ENDPOINT));
+    channel =
+        IOWebSocketChannel.connect(Uri.parse(API_URL + SEND_AUDIO_ENDPOINT));
     channel!.stream.listen(
-          (data) {
+      (data) {
+        print('Received data: $data');
         if (data is String) {
-          // Handle text data
           processTextData(data);
         } else if (data is Uint8List) {
-          // Handle binary audio data
           _playAudioStream(data);
         }
       },
       onDone: () {
-        // Handle socket closing
+        print('Connection closed');
+        print(channel!.closeCode);
+        print(channel!.closeReason);
       },
       onError: (error) {
-        // Handle error
+        print('Error: $error');
       },
     );
   }
 
   // Start recording and sending audio data
   void startRecording() async {
-    audioRecorder = FlutterSoundRecorder(logLevel: Level.error);
+    audioRecorder = FlutterSoundRecorder(logLevel: Level.nothing);
     await audioRecorder!.openRecorder();
 
     // Listen to the stream and send data over WebSocket
-    streamController.stream.listen((data) {
-      if (channel != null) {
-        channel!.sink.add(data);
+    streamController.stream.listen((buffer) {
+      if (buffer is FoodData) {
+        print("Sending ${buffer.data!.length} bytes of audio data",);
+        channel!.sink.add(buffer.data!);
       }
     });
 
+    print("Starting recorder...");
     audioRecorder!.startRecorder(
-      codec: Codec.pcm16,
-      numChannels: 1,
-      sampleRate: 44100,
       toStream: streamController.sink,
+      codec: Codec.pcm16,
     );
     isRecording = true;
   }
+
   // Stop recording
   void stopRecording() async {
     if (isRecording) {
@@ -70,12 +72,13 @@ class InternalAPIRepository extends GetxController {
       await audioRecorder!.closeRecorder();
       streamController.close(); // Close the stream controller
 
+      print('Sending END_OF_AUDIO');
       channel!.sink.add("END_OF_AUDIO");
 
       audioRecorder = null;
       isRecording = false;
     }
-  }  // Process received text data
+  } // Process received text data
 
   void processTextData(String text) {
     Logs.d("Received text: $text");
@@ -95,11 +98,5 @@ class InternalAPIRepository extends GetxController {
     if (isRecording) stopRecording();
     audioPlayer?.closePlayer();
     channel?.sink.close();
-  }
-
-  Future<http.Response?> textToSpeech(String text) async {
-    // TODO: Implement text to speech API on backend
-    // TODO: Mainly to reproduce messages again on the chat
-    return null;
   }
 }

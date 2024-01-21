@@ -26,7 +26,6 @@ class SplashController extends GetxController {
     Get.put(InternalAPIRepository(), permanent: true);
     Get.put(AnalyticsRepository(), permanent: true);
 
-
     // Set the initial screen
     Future.delayed(const Duration(milliseconds: 1500), () {
       Get.offAllNamed(AppRoutes.ONBOARDING);

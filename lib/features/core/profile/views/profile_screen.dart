@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/core/profile/controllers/profile_controller.dart';
+import 'package:nia_flutter/features/core/profile/views/questions_view.dart';
+import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -52,39 +54,30 @@ class ProfileScreen extends StatelessWidget {
               context: context,
               tiles: [
                 ListTile(
-                  leading: Icon(Icons.person),
-                  title: Text('Mi información'),
+                  leading: Icon(Icons.info_outline),
+                  title: Text('Información sobre Nia'),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Get.to(() => InfoUserScreen());
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.bar_chart),
-                  title: Text('Estadísticas'),
-                  iconColor: primaryColor,
-                  textColor: primaryColor,
-                  onTap: () {
-                    // Get.to(() => StadisticsScreen());
+                    controller.goToInformation();
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.subscriptions),
-                  title: Text('Suscripciones'),
+                  title: Text('Subscripciones'),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Get.to(() => SubscriptionsScreen());
+                    Get.to(() => subscriptionView());
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.question_answer),
-                  title: Text('Preguntas'),
+                  title: Text('Preguntas Frecuentes'),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Get.to(() => QuestionsScreen());
+                    Get.to(() => questionsView());
                   },
                 ),
                 ListTile(

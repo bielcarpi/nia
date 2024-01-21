@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nia_flutter/features/core/profile/views/niaInformation.dart';
+import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
 import '../../../../repository/bucket_repository/bucket_repository.dart';
 import '../../../../utils/image_picker.dart';
 import 'package:nia_flutter/features/authentication/controllers/login_controller.dart';
 import 'package:nia_flutter/features/authentication/views/login_screen.dart';
 import 'package:nia_flutter/repository/authentication_repository/authentication_repository.dart';
+
 
 class ProfileController extends GetxController {
   final RxString userProfileImage = 'https://via.placeholder.com/150'.obs;
@@ -30,15 +33,11 @@ class ProfileController extends GetxController {
 
 
   void goToInformation() {
-    // Get.to(() => UserInformationScreen());
+    Get.to(() => niaInformation());
   }
 
-  void goToStatistics() {
-    // Get.to(() => StatisticsScreen());
-  }
-
-  void goToSuscription() {
-    // Get.to(() => SuscriptionScreen());
+  void goToSubscription() {
+    Get.to(() => subscriptionView());
   }
 
   void goToQuestions() {

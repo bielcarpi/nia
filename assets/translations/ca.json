@@ -91,6 +91,11 @@
     "language": {
       "title": "Canviar Idioma",
       "question": "Quin idioma vols canviar?"
+    },
+    "timeline": {
+      "title": "Timeline Pròximament!",
+      "nia": "Aquesta implementació de l'aplicació serà implementada properament i estarà disponible a la següent actualització de l'app.",
+      "user": "Perfecte, ho provaré aviat en la nova actualització!"
     }
   }
 }

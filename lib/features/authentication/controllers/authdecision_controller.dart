@@ -4,26 +4,21 @@ import 'package:nia_flutter/repository/authentication_repository/authentication_
 import 'package:nia_flutter/routing/app_routes.dart';
 
 class AuthDecisionController extends GetxController {
-
   //Rx variables to observe changes
   final errorMessage = "".obs;
   final isPasswordVisible = false.obs;
 
-  @override
-  void onInit() {
-    super.onInit();
+  void pushSignUpScreen() {
+    Get.offNamed(AppRoutes.SIGNUP);
   }
 
-  @override
-  void onClose() {
-    super.onClose();
+  void pushLoginScreen() {
+    Get.offNamed(AppRoutes.LOGIN);
   }
-
-  void pushSignUpScreen() {Get.offNamed(AppRoutes.SIGNUP);}
-  void pushLoginScreen() {Get.offNamed(AppRoutes.LOGIN);}
 
   Future<void> loginWithGoogleClicked() async {
-    var success = await AuthenticationRepository.instance.signInWithGoogle(Get.context!);
+    var success =
+        await AuthenticationRepository.instance.signInWithGoogle(Get.context!);
     if (success) {
       Get.offNamed(AppRoutes.CORE);
     } else {
@@ -32,10 +27,25 @@ class AuthDecisionController extends GetxController {
     }
   }
 
-  void loginWithFacebookClicked() {
+  void loginWithFacebookClicked() async {
+    var success = await AuthenticationRepository.instance
+        .signInWithFacebook(Get.context!);
+    if (success) {
+      Get.offNamed(AppRoutes.CORE);
+    } else {
+      errorMessage.value = "Login failed";
+      showFailedDialog(errorMessage.value, "OK", "Login with Facebook failed");
+    }
   }
 
-  void loginWithAppleClicked() {
+  void loginWithAppleClicked() async {
+    var success =
+        await AuthenticationRepository.instance.signInWithApple(Get.context!);
+    if (success) {
+      Get.offNamed(AppRoutes.CORE);
+    } else {
+      errorMessage.value = "Login failed";
+      showFailedDialog(errorMessage.value, "OK", "Login with apple failed");
+    }
   }
-
 }

@@ -49,10 +49,9 @@ class ProfileController extends GetxController {
     //No fem pantalla, boto per eliminar + confirmació del usuari
   }
 
-  void signOut() {
-    AuthenticationRepository.instance.firebaseAuthSignOut().then((_) {
-      Get.offAll(() => const AuthDecisionScreen());
-    });
+  void signOut() async {
+    await AuthenticationRepository.instance.signOut();
+    Get.offAll(() => const AuthDecisionScreen());
   }
 
   selectTab(BuildContext context, int index) {}

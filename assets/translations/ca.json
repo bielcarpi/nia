@@ -14,6 +14,78 @@
       "confirmPassword": "Confirma la contrassenya",
       "register": "Registra't",
       "error": "Introdueix un usuari i contrassenya vàlids"
+    },
+    "niaInformation": {
+      "title": "Informació sobre Nia",
+      "introduction": {
+        "subtitle": "Benvingut a Nia, el teu Assistent d'Intel·ligència Artificial",
+        "description": "Nia és una assistent virtual avançada impulsada per la tecnologia d'Intel·ligència Artificial d'OpenAI, dissenyada per ajudar-te a millorar el teu domini en una llengua secundària a través de converses interactives i personalitzades."
+      },
+      "function": {
+        "subtitle": "Com Funciona Nia?",
+        "description": "Nia utilitza la darrera versió de ChatGPT amb tecnologia OpenAI per entendre i respondre a les teves preguntes en temps real. Amb una barreja d'algoritmes de processament de llenguatge natural i aprenentatge automàtic, Nia està programada per oferir-te una experiència d'aprenentatge de llengües rica i adaptable."
+      },
+      "characteristics": {
+        "subtitle": "Característiques Principals",
+        "description": "\t1) Interactua amb Nia en la teva llengua secundària. Cada conversa està dissenyada per millorar la teva fluïdesa i comprensió.\n\n\t2) Nia s'adapta al teu nivell d'habilitat i als teus interessos personals per fer l'aprenentatge més rellevant i atractiu.\n\n\t3) Rep retroalimentació sobre l'ús del teu idioma, incloent pronunciació, gramàtica i vocabulari.\n\n\t4) Participa en activitats i jocs lingüístics dissenyats per reforçar el teu aprenentatge.\n\n\t5) Practica amb una varietat d'idiomes, cadascun amb el seu propi conjunt de lliçons i desafiaments."
+      },
+      "privacy": {
+        "subtitle": "Privacitat i Seguretat",
+        "description": "La teva privacitat és la nostra prioritat. Les converses amb Nia són segures i confidencials, i ens adherim a estrictes polítiques de privacitat per protegir les teves dades."
+      },
+      "aboutUs": {
+        "subtitle": "Sobre Nosaltres",
+        "description": "Desenvolupat per un equip d'estudiants de la universitat La Salle URL. Nia és més que una aplicació; és la teva companya en el viatge cap al domini d'un nou idioma."
+      }
+    },
+    "questions": {
+      "title": "Preguntes Freqüents",
+      "information": {
+        "subtitle": "Informació",
+        "description": "Tens preguntes sobre Nia i com funciona? Aquí trobaràs respostes a algunes de les preguntes més comunes."
+      },
+      "q1": {
+        "subtitle": "Què és Nia i com pot ajudar-me a aprendre un nou idioma?",
+        "description": "Nia és un assistent virtual basat en IA que t'ajuda a practicar i millorar el teu domini d'un idioma secundari mitjançant converses interactives i personalitzades. Utilitza l'última tecnologia d'OpenAI per oferir una experiència d'aprenentatge natural i efectiva."
+      },
+      "q2": {
+        "subtitle": "És gratuïta l'aplicació Nia?",
+        "description": "No, Nia és una aplicació de subscripció. Oferim una experiència completa i personalitzada amb Nia per un cost de 5,99 € al mes."
+      },
+      "q3": {
+        "subtitle": "Com puc canviar l'idioma a l'aplicació?",
+        "description": "Canviar l'idioma a Nia és tan senzill com començar a parlar en l'idioma que vols practicar. Nia està dissenyada per reconèixer automàticament l'idioma en què estàs parlant i respondrà en el mateix."
+      },
+      "q4": {
+        "subtitle": "Puc cancel·lar la meva subscripció en qualsevol moment?",
+        "description": "Sí, pots cancel·lar la teva subscripció en qualsevol moment. No hi ha contractes a llarg termini ni càrrecs ocults."
+      },
+      "q5": {
+        "subtitle": "Funciona Nia sense connexió a internet?",
+        "description": "Nia requereix una connexió a internet per accedir a la majoria de les seves funcions, ja que utilitza el núvol per processar les respostes i actualitzar el contingut."
+      },
+      "q6": {
+        "subtitle": "Com garantiu la seguretat i privacitat de les meves dades?",
+        "description": "Ens prenem molt seriosament la seguretat i la privacitat de les teves dades. Utilitzem mesures de seguretat d'avantguarda per protegir la teva informació i no compartim les teves dades personals amb tercers."
+      }
+    },
+    "subscription": {
+      "title": "Subscripció",
+      "information": {
+        "subtitle": "Informació",
+        "description": "Oferim una experiència avançada i personalitzada per a aquells que desitgen portar el seu aprenentatge al següent nivell. Per només 5,99 € al mes, accedeix a característiques exclusives i maximitza el teu potencial d'aprenentatge amb Nia."
+      },
+      "characteristics": {
+        "subtitle": "Característiques de la Subscripció",
+        "description": "\t1) Gaudeix d'interaccions il·limitades amb Nia per a una pràctica intensiva.\n\n\t2) Aprèn sense interrupcions per a una experiència més immersiva.\n\n\t3) Obtén respostes ràpides i suport dedicat quan ho necessitis.\n\n\t4) Pots practicar qualsevol idioma del món.\n\n\t5) Tecnologia IA per millorar la teva vocalització."
+      },
+      "questions": {
+        "title": "Preguntes Freqüents:",
+        "subtitle1": "Com es facturen les subscripcions?",
+        "description1": "Les subscripcions es facturen mensualment i pots cancel·lar en qualsevol moment.",
+        "subtitle2": "Com cancel·lo la meva subscripció?",
+        "description2": "Pots cancel·lar fàcilment la teva subscripció des de la configuració del teu compte en qualsevol moment."
+      }
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../constants/colors.dart';
 
@@ -7,7 +8,7 @@ class questionsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Preguntas Frecuentes', style: TextStyle(color: primaryColor)),
+        title: Text(tr('auth.questions.title'), style: TextStyle(color: primaryColor)),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -17,83 +18,78 @@ class questionsView extends StatelessWidget {
             children: <Widget>[
               SizedBox(height: 20),
               Text(
-                'Información',
+                tr('auth.questions.information.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                '¿Tienes preguntas sobre Nia y cómo funciona? Aquí encontrarás respuestas a algunas de las preguntas más comunes.',
+                tr('auth.questions.information.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                '¿Qué es Nia y cómo puede ayudarme a aprender un nuevo idioma?',
+                tr('auth.questions.q1.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Nia es un asistente virtual basado en IA que te ayuda a practicar y mejorar tu dominio de un idioma secundario mediante '
-                    'conversaciones interactivas y personalizadas. Utiliza la última tecnología de OpenAI para ofrecer una experiencia de aprendizaje '
-                    'natural y efectiva.',
+                tr('auth.questions.q1.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                '¿Es gratuita la aplicación Nia?',
+                tr('auth.questions.q2.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'No, Nia es una aplicación de suscripción. Ofrecemos una experiencia completa y personalizada con Nia por un costo de 5,99 € al mes.',
+                tr('auth.questions.q2.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                '¿Cómo puedo cambiar el idioma en la aplicación?',
+                tr('auth.questions.q3.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Cambiar el idioma en Nia es tan sencillo como empezar a hablar en el idioma que deseas practicar. Nia está diseñada '
-                    'para reconocer automáticamente el idioma en el que estás hablando y responderá en el mismo.',
+                tr('auth.questions.q3.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                '¿Puedo cancelar mi suscripción en cualquier momento?',
+                tr('auth.questions.q4.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Sí, puedes cancelar tu suscripción en cualquier momento. No hay contratos a largo plazo ni cargos ocultos.',
+                tr('auth.questions.q4.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                '¿Nia funciona sin conexión a internet?',
+                tr('auth.questions.q5.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Nia requiere una conexión a internet para acceder a la mayoría de sus funciones, ya que utiliza la nube para procesar '
-                    'las respuestas y actualizar el contenido.',
+                tr('auth.questions.q5.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                '¿Cómo garantizan la seguridad y privacidad de mis datos?',
+                tr('auth.questions.q6.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Nos tomamos muy en serio la seguridad y privacidad de tus datos. Utilizamos medidas de seguridad de vanguardia para proteger '
-                    'tu información y no compartimos tus datos personales con terceros.',
+                tr('auth.questions.q6.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),

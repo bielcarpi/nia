@@ -14,6 +14,78 @@
       "confirmPassword": "Confirm Password",
       "register": "Register",
       "error": "Invalid username or password"
+    },
+    "niaInformation": {
+      "title": "Information about Nia",
+      "introduction": {
+        "subtitle": "Welcome to Nia, your Artificial Intelligence Assistant",
+        "description": "Nia is an advanced virtual assistant powered by OpenAI's Artificial Intelligence technology, designed to help you improve your proficiency in a secondary language through interactive and personalized conversations."
+      },
+      "function": {
+        "subtitle": "How Does Nia Work?",
+        "description": "Nia uses the latest version of ChatGPT with OpenAI technology to understand and respond to your questions in real time. With a mix of natural language processing algorithms and machine learning, Nia is programmed to offer you a rich and adaptive language learning experience."
+      },
+      "characteristics": {
+        "subtitle": "Main Characteristics",
+        "description": "\t1) Interact with Nia in your secondary language. Each conversation is designed to improve your fluency and understanding.\n\n\t2) Nia adapts to your skill level and personal interests to make learning more relevant and engaging.\n\n\t3) Receive feedback on your language use, including pronunciation, grammar, and vocabulary.\n\n\t4) Participate in linguistic activities and games designed to reinforce your learning.\n\n\t5) Practice with a variety of languages, each with its own set of lessons and challenges."
+      },
+      "privacy": {
+        "subtitle": "Privacy and Security",
+        "description": "Your privacy is our priority. Conversations with Nia are secure and confidential, and we adhere to strict privacy policies to protect your data."
+      },
+      "aboutUs": {
+        "subtitle": "About Us",
+        "description": "Developed by a team of students from La Salle URL university. Nia is more than an app; it's your companion on the journey to mastering a new language."
+      }
+    },
+    "questions": {
+      "title": "Frequently Asked Questions",
+      "information": {
+        "subtitle": "Information",
+        "description": "Do you have questions about Nia and how it works? Here you will find answers to some of the most common questions."
+      },
+      "q1": {
+        "subtitle": "What is Nia and how can it help me learn a new language?",
+        "description": "Nia is an AI-based virtual assistant that helps you practice and improve your proficiency in a secondary language through interactive and personalized conversations. It uses the latest OpenAI technology to provide a natural and effective learning experience."
+      },
+      "q2": {
+        "subtitle": "Is the Nia app free?",
+        "description": "No, Nia is a subscription-based application. We offer a complete and personalized experience with Nia for a cost of €5.99 per month."
+      },
+      "q3": {
+        "subtitle": "How can I change the language in the app?",
+        "description": "Changing the language in Nia is as simple as starting to speak in the language you want to practice. Nia is designed to automatically recognize the language you are speaking in and will respond in the same language."
+      },
+      "q4": {
+        "subtitle": "Can I cancel my subscription at any time?",
+        "description": "Yes, you can cancel your subscription at any time. There are no long-term contracts or hidden charges."
+      },
+      "q5": {
+        "subtitle": "Does Nia work without an internet connection?",
+        "description": "Nia requires an internet connection to access most of its features, as it uses the cloud to process responses and update content."
+      },
+      "q6": {
+        "subtitle": "How do you ensure the security and privacy of my data?",
+        "description": "We take the security and privacy of your data very seriously. We use cutting-edge security measures to protect your information and do not share your personal data with third parties."
+      }
+    },
+    "subscription": {
+      "title": "Subscription",
+      "information": {
+        "subtitle": "Information",
+        "description": "We offer an advanced and personalized experience for those who wish to take their learning to the next level. For only €5.99 per month, access exclusive features and maximize your learning potential with Nia."
+      },
+      "characteristics": {
+        "subtitle": "Subscription Features",
+        "description": "\t1) Enjoy unlimited interactions with Nia for intensive practice.\n\n\t2) Learn without interruptions for a more immersive experience.\n\n\t3) Get quick responses and dedicated support when you need it.\n\n\t4) You can practice any language in the world.\n\n\t5) AI technology to improve your vocalization."
+      },
+      "questions": {
+        "title": "Frequently Asked Questions:",
+        "subtitle1": "How are subscriptions billed?",
+        "description1": "Subscriptions are billed monthly and you can cancel at any time.",
+        "subtitle2": "How do I cancel my subscription?",
+        "description2": "You can easily cancel your subscription from your account settings at any time."
+      }
     }
   }
 }

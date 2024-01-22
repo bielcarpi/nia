@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
@@ -55,7 +56,7 @@ class ProfileScreen extends StatelessWidget {
               tiles: [
                 ListTile(
                   leading: Icon(Icons.info_outline),
-                  title: Text('Información sobre Nia'),
+                  title: Text(tr('auth.niaInformation.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
@@ -64,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.subscriptions),
-                  title: Text('Subscripciones'),
+                  title: Text(tr('auth.subscription.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
@@ -73,7 +74,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.question_answer),
-                  title: Text('Preguntas Frecuentes'),
+                  title: Text(tr('auth.questions.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {

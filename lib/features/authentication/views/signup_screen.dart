@@ -11,6 +11,15 @@ class SignupScreen extends GetView<SignupController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            controller.backClicked();
+          },
+          color: buttonPrimaryColor,
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -18,35 +27,27 @@ class SignupScreen extends GetView<SignupController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    onPressed: () { controller.backClicked(); },
-                    color: buttonPrimaryColor,
-                  ),
-                ),
                 Text(
                   tr("Register"),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(color: primaryColor, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: formSpacing),
+                const SizedBox(height: formSpacing),
                 Text(
                   tr("Hello! We are glad to see you."),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: primaryColor),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: controller.emailController,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.email, color: transparentBlue),
                     labelText: tr("email"),
-                    labelStyle: TextStyle(color: transparentBlue),
+                    labelStyle: const TextStyle(color: transparentBlue),
                   ),
                 ),
-                SizedBox(height: formSpacing),
+                const SizedBox(height: formSpacing),
                 Obx(() {
                   return TextFormField(
                     controller: controller.passwordController,
@@ -54,7 +55,7 @@ class SignupScreen extends GetView<SignupController> {
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock, color: transparentBlue),
                       labelText: tr("password"),
-                      labelStyle: TextStyle(color: transparentBlue),
+                      labelStyle: const TextStyle(color: transparentBlue),
                       suffixIcon: IconButton(
                         icon: Icon(
                           controller.isPasswordVisible.value
@@ -67,7 +68,7 @@ class SignupScreen extends GetView<SignupController> {
                     ),
                   );
                 }),
-                SizedBox(height: formSpacingRegister),
+                const SizedBox(height: formSpacingRegister),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -77,11 +78,11 @@ class SignupScreen extends GetView<SignupController> {
                       onPrimary: thirdColor,
                       textStyle: const TextStyle(color: buttonPrimaryColor),
                       fixedSize: const Size.fromHeight(50),
-                      side: BorderSide(color: buttonPrimaryColor, width: 2.0),
+                      side: const BorderSide(color: buttonPrimaryColor, width: 2.0),
                     ),
                     child: Text(
                       tr("Sign up"),
-                      style: TextStyle(color: thirdColor, fontSize: 18),
+                      style: const TextStyle(color: thirdColor, fontSize: 18),
                     ),
                   ),
                 ),

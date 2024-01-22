@@ -6,11 +6,20 @@ import 'package:nia_flutter/constants/sizes.dart';
 import 'package:nia_flutter/features/authentication/controllers/forget_password_controller.dart';
 
 class ForgetPasswordScreen extends GetView<ForgetPasswordController> {
-  const ForgetPasswordScreen({Key? key}) : super(key: key);
+  const ForgetPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            controller.backClicked();
+          },
+          color: buttonPrimaryColor,
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -18,35 +27,27 @@ class ForgetPasswordScreen extends GetView<ForgetPasswordController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    onPressed: () { controller.backClicked(); },
-                    color: buttonPrimaryColor,
-                  ),
-                ),
                 Text(
                   tr("Forgot your password?"),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(color: primaryColor, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: formSpacing),
+                const SizedBox(height: formSpacing),
                 Text(
                   tr("Hello! Please complete the gaps to remember your password."),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: primaryColor),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: controller.emailController,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.email, color: transparentBlue),
                     labelText: tr("email"),
-                    labelStyle: TextStyle(color: transparentBlue),
+                    labelStyle: const TextStyle(color: transparentBlue),
                   ),
                 ),
-                SizedBox(height: formSpacingRegister),
+                const SizedBox(height: formSpacingRegister),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -58,11 +59,11 @@ class ForgetPasswordScreen extends GetView<ForgetPasswordController> {
                       onPrimary: thirdColor,
                       textStyle: const TextStyle(color: buttonPrimaryColor),
                       fixedSize: const Size.fromHeight(50),
-                      side: BorderSide(color: buttonPrimaryColor, width: 2.0),
+                      side: const BorderSide(color: buttonPrimaryColor, width: 2.0),
                     ),
                     child: Text(
                       tr("Reset password"),
-                      style: TextStyle(color: thirdColor, fontSize: 18),
+                      style: const TextStyle(color: thirdColor, fontSize: 18),
                     ),
                   ),
                 ),

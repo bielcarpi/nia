@@ -3,9 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/core/profile/controllers/profile_controller.dart';
-import 'package:nia_flutter/features/core/profile/views/questions_view.dart';
-import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
-import 'package:nia_flutter/features/core/profile/views/language_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -26,7 +23,7 @@ class ProfileScreen extends StatelessWidget {
               children: <Widget>[
                 GestureDetector(
                   onTap: () async {
-                    var image = await controller.selectImage();
+                    await controller.selectImage();
                   },
                   child: CircleAvatar(
                     radius: 60,
@@ -43,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 8),
                 Text(
-                  controller.userName.value,
+                  controller.userEmail.value,
                   style: TextStyle(color: primaryColor),
                 ),
               ],
@@ -70,7 +67,7 @@ class ProfileScreen extends StatelessWidget {
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    Get.to(() => subscriptionView());
+                    controller.goToSubscription();
                   },
                 ),
                 ListTile(
@@ -79,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    Get.to(() => questionsView());
+                    controller.goToQuestions();
                   },
                 ),
                 ListTile(
@@ -88,7 +85,7 @@ class ProfileScreen extends StatelessWidget {
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    Get.to(() => LanguageScreen());
+                    controller.goToChangeLanguage();
                   },
                 ),
                 ListTile(

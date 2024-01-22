@@ -91,6 +91,11 @@
     "language": {
       "title": "Change Language",
       "question": "Which language do you want to change to?"
+    },
+    "timeline": {
+      "title": "Timeline Coming Soon!",
+      "nia": "This implementation of the application will be implemented properly and will be available upon the next update of the app.",
+      "user": "Perfect, I'll try it soon in the new update!"
     }
   }
 }

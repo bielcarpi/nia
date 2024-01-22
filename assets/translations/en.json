@@ -5,7 +5,8 @@
       "username": "Username",
       "password": "Password",
       "login": "Login",
-      "error": "Invalid username or password"
+      "error": "Invalid username or password",
+      "logout": "Log Out"
     },
     "register": {
       "title": "Register",
@@ -86,6 +87,10 @@
         "subtitle2": "How do I cancel my subscription?",
         "description2": "You can easily cancel your subscription from your account settings at any time."
       }
+    },
+    "language": {
+      "title": "Change Language",
+      "question": "Which language do you want to change to?"
     }
   }
 }

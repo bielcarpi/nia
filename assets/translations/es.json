@@ -5,7 +5,8 @@
       "username": "Usuario",
       "password": "Contraseña",
       "login": "Login",
-      "error": "Usuario o contraseña incorrectos"
+      "error": "Usuario o contraseña incorrectos",
+      "logout": "Cerrar Sesión"
     },
     "register": {
       "title": "Registro",
@@ -86,6 +87,10 @@
         "subtitle2": "¿Cómo cancelo mi suscripción?",
         "description2": "Puedes cancelar tu suscripción fácilmente desde la configuración de tu cuenta en cualquier momento."
       }
+    },
+    "language": {
+      "title": "Cambiar Idioma",
+      "question": "¿Que idioma quieres cambiar?"
     }
   }
 }

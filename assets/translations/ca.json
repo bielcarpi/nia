@@ -5,7 +5,8 @@
       "username": "Usuari",
       "password": "Contrassenya",
       "login": "Login",
-      "error": "Usuari o contrassenya incorrectes"
+      "error": "Usuari o contrassenya incorrectes",
+      "logout": "Tancar Sessió"
     },
     "register": {
       "title": "Registra't",
@@ -86,6 +87,10 @@
         "subtitle2": "Com cancel·lo la meva subscripció?",
         "description2": "Pots cancel·lar fàcilment la teva subscripció des de la configuració del teu compte en qualsevol moment."
       }
+    },
+    "language": {
+      "title": "Canviar Idioma",
+      "question": "Quin idioma vols canviar?"
     }
   }
 }

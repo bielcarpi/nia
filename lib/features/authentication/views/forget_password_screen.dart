@@ -51,9 +51,7 @@ class ForgetPasswordScreen extends GetView<ForgetPasswordController> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => controller.rememberPasswordClicked(
-                      email: controller.emailController.text,
-                    ),
+                    onPressed: () => controller.resetPasswordClicked(),
                     style: ElevatedButton.styleFrom(
                       primary: buttonPrimaryColor,
                       onPrimary: thirdColor,

@@ -114,4 +114,18 @@ class AuthenticationRepository extends GetxController {
       return false;
     }
   }
+
+  Future<bool> sendPasswordResetEmail(String email) async {
+    if (buttonClicked) return false;
+    buttonClicked = true;
+
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      buttonClicked = false;
+      return true;
+    } catch (e) {
+      buttonClicked = false;
+      return false;
+    }
+  }
 }

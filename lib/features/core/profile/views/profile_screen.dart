@@ -1,9 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/core/profile/controllers/profile_controller.dart';
 import 'package:nia_flutter/features/core/profile/views/questions_view.dart';
 import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
+import 'package:nia_flutter/features/core/profile/views/language_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -55,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
               tiles: [
                 ListTile(
                   leading: Icon(Icons.info_outline),
-                  title: Text('Información sobre Nia'),
+                  title: Text(tr('auth.niaInformation.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
@@ -64,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.subscriptions),
-                  title: Text('Subscripciones'),
+                  title: Text(tr('auth.subscription.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
@@ -73,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.question_answer),
-                  title: Text('Preguntas Frecuentes'),
+                  title: Text(tr('auth.questions.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
@@ -81,23 +83,20 @@ class ProfileScreen extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.delete_forever),
-                  title: Text('Eliminar mi cuenta y datos'),
+                  leading: Icon(Icons.language),
+                  title: Text(tr('auth.language.title')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Mostrem misatge de confirmació
-                    // _confirmAccountDeletion(context);
+                    Get.to(() => LanguageScreen());
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.logout),
-                  title: Text('Cerrar sesión'),
+                  title: Text(tr('auth.login.logout')),
                   iconColor: primaryColor,
                   textColor: primaryColor,
                   onTap: () {
-                    // Mostrem misatge de confirmació
-                    // Call the signOut function from the controller
                     controller.signOut();
                     //TODO _confirmSignOut(context);
                   },

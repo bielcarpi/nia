@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../constants/colors.dart';
 
@@ -7,7 +8,7 @@ class subscriptionView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Subscripción', style: TextStyle(color: primaryColor)),
+        title: Text(tr('auth.subscription.title'), style: TextStyle(color: primaryColor)),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -17,53 +18,49 @@ class subscriptionView extends StatelessWidget {
             children: <Widget>[
               SizedBox(height: 20),
               Text(
-                'Información',
+                tr('auth.subscription.information.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Ofrecemos una experiencia avanzada y personalizada para aquellos que desean llevar su aprendizaje al siguiente nivel. Por solo 5,99 € al mes, accede a características exclusivas y maximiza tu potencial de aprendizaje con Nia.',
+                tr('auth.subscription.information.description'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 20),
               Text(
-                'Características de la subscripción',
+                tr('auth.subscription.characteristics.subtitle'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                '\t1) Disfruta de interacciones ilimitadas con Nia para una práctica intensiva.\n\n'
-                    '\t2) Aprende sin interrupciones para una experiencia más inmersiva.\n\n'
-                    '\t3) Obtén respuestas rápidas y soporte dedicado cuando lo necesites.\n\n'
-                    '\t4) Puedes practicar cualquier idioma del mundo.\n\n'
-                    '\t5) Tecnologia IA para mejorar tu vocalización.',
+                tr('auth.subscription.characteristics.description'),
                 style: TextStyle(fontSize: 14),
               ),
               SizedBox(height: 20),
               Text(
-                'Preguntas Frecuentes:',
+                tr('auth.subscription.questions.title'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                '¿Cómo se facturan las suscripciones?',
+                tr('auth.subscription.questions.subtitle1'),
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Las suscripciones se facturan mensualmente y puedes cancelar en cualquier momento.',
+                tr('auth.subscription.questions.description1'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),
               SizedBox(height: 10),
               Text(
-                '¿Cómo cancelo mi suscripción?',
+                tr('auth.subscription.questions.subtitle2'),
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryColor),
               ),
               SizedBox(height: 10),
               Text(
-                'Puedes cancelar tu suscripción fácilmente desde la configuración de tu cuenta en cualquier momento.',
+                tr('auth.subscription.questions.description2'),
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.justify,
               ),

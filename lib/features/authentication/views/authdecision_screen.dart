@@ -42,16 +42,19 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     customSocialButton(
+                      false,
                         "assets/images/social_icons/apple.svg", () =>
                         controller.loginWithAppleClicked()
                     ),
                     const SizedBox(width: 20),
                     customSocialButton(
-                        "assets/images/social_icons/google.svg", () =>
+                      true,
+                        "assets/images/social_icons/google.png", () =>
                         controller.loginWithGoogleClicked()
                     ),
                     const SizedBox(width: 20),
                     customSocialButton(
+                        false,
                         "assets/images/social_icons/facebook.svg", () =>
                         controller.loginWithFacebookClicked()
                     ),
@@ -78,14 +81,19 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
     );
   }
 
-  Widget customSocialButton(String iconPath, VoidCallback onPressed) {
+  Widget customSocialButton(bool isPng, String iconPath, VoidCallback onPressed) {
     return Expanded(
       child: TextButton.icon(
         onPressed: onPressed,
         icon: Center(
-          child: SvgPicture.asset(
+          child: isPng ?
+          Image.asset(
             iconPath,
-            height: 50,
+            height: 60,
+          ) :
+          SvgPicture.asset(
+            iconPath,
+            height: 60,
           ),
         ),
         label: const SizedBox.shrink(),

@@ -20,7 +20,7 @@ class CoreScreen extends GetView<CoreController> {
         if (controller.currentIndex.value == 0) {
           return const ProfileScreen();
         } else if (controller.currentIndex.value == 1) {
-          return const HomeScreen();
+          return HomeScreen();
         } else {
           return const TimelineScreen();
         }

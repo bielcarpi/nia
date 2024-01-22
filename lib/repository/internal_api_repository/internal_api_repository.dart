@@ -24,7 +24,7 @@ class InternalAPIRepository extends GetxController {
   String? playingPath;
 
   // Initialize WebSocket connection
-  Future<void> initWebSocket() async {
+  Future<void> initWebSocket(Function addMessage) async {
     channel =
         IOWebSocketChannel.connect(Uri.parse(API_URL + SEND_AUDIO_ENDPOINT));
 
@@ -33,11 +33,14 @@ class InternalAPIRepository extends GetxController {
     playingPath = "${tempDir.path}/received.aac";
     List<Uint8List> chunks = [];
     var tempFile = File(playingPath!);
+    bool first = true;
 
     channel!.stream.listen(
       (data) async {
         if (data is String) {
-          processTextData(data);
+          if (data == "END_OF_AUDIO") return;
+          addMessage(data, first);
+          first = false;
         } else if (data is Uint8List) {
           print('Received audio data. Chunk size: ${data.length}');
           chunks.add(data); // Receive on RAM

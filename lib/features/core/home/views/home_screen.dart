@@ -1,6 +1,7 @@
 import 'package:chat_bubbles/chat_bubbles.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:nia_flutter/features/core/home/controllers/home_controller.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -14,7 +15,8 @@ class HomeScreen extends StatelessWidget {
     var controller = Get.put(HomeController());
 
     // Scroll to the bottom of the list when a new message is added
-    ever(controller.conversation, (_) {
+    ever(controller.conversation, (_) async {
+      await Future.delayed(const Duration(milliseconds: 100));
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -55,13 +57,17 @@ class HomeScreen extends StatelessWidget {
         ),
         Center(
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 100),
+            padding: const EdgeInsets.symmetric(vertical: 15),
             child: Obx(
               () => FloatingActionButton(
                 onPressed: controller.onClickRecordButton,
                 backgroundColor:
                     controller.isRecording.value ? Colors.red : Colors.blue,
-                child: const Icon(Icons.mic),
+                child: controller.isPlaying.value
+                    ? LoadingAnimationWidget.fallingDot(
+                        color: Colors.white,
+                        size: 40)
+                    : const Icon(Icons.mic),
               ),
             ),
           ),

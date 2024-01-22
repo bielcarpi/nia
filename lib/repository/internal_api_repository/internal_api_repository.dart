@@ -24,7 +24,7 @@ class InternalAPIRepository extends GetxController {
   String? playingPath;
 
   // Initialize WebSocket connection
-  Future<void> initWebSocket(Function addMessage) async {
+  Future<void> initWebSocket(Function addMessage, Function endedPlaying) async {
     channel =
         IOWebSocketChannel.connect(Uri.parse(API_URL + SEND_AUDIO_ENDPOINT));
 
@@ -48,11 +48,17 @@ class InternalAPIRepository extends GetxController {
       },
       onDone: () async {
         // Save chunks to file, then play
+        await tempFile.delete();
         for (var chunk in chunks) {
           await tempFile.writeAsBytes(chunk, mode: FileMode.append);
         }
         await player.setFilePath(playingPath!);
         await player.play();
+        player.playerStateStream.listen((event) {
+          if (event.processingState == ProcessingState.completed) {
+            endedPlaying();
+          }
+        });
       },
       onError: (error) {
         print('Error: $error');

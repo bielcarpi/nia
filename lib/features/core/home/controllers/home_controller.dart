@@ -5,6 +5,7 @@ import 'package:nia_flutter/repository/internal_api_repository/internal_api_repo
 
 class HomeController extends GetxController {
   final isRecording = false.obs;
+  final isPlaying = false.obs;
 
   RxList<Message> conversation = <Message>[
     Message(content: "Hi, I'm Nia! How can I help you?", isUser: false),
@@ -15,13 +16,15 @@ class HomeController extends GetxController {
   }
 
   void onClickRecordButton() async {
+    if (isPlaying.value) return;
     isRecording.value = !isRecording.value;
 
     if (isRecording.value) {
-      await InternalAPIRepository.instance.initWebSocket(addMessage);
+      await InternalAPIRepository.instance.initWebSocket(addMessage, () => isPlaying.value = false);
       InternalAPIRepository.instance.startRecording();
     } else {
       InternalAPIRepository.instance.stopRecording();
+      isPlaying.value = true;
     }
   }
 }

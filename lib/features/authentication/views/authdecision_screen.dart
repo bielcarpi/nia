@@ -6,7 +6,7 @@ import 'package:nia_flutter/constants/colors.dart';
 import 'package:nia_flutter/features/authentication/controllers/authdecision_controller.dart';
 
 class AuthDecisionScreen extends GetView<AuthDecisionController> {
-  const AuthDecisionScreen({Key? key}) : super(key: key);
+  const AuthDecisionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
                 const SizedBox(height: 10),
                 Text(
                   tr("to Nia!"),
-                  style: const  TextStyle(
+                  style: const TextStyle(
                     fontSize: 30,
                     color: thirdColor,
                   ),
@@ -41,17 +41,20 @@ class AuthDecisionScreen extends GetView<AuthDecisionController> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    customSocialButton("assets/images/social_icons/apple.svg", () {
-                      // TODO: Handle Apple login
-                    }),
+                    customSocialButton(
+                        "assets/images/social_icons/apple.svg", () =>
+                        controller.loginWithAppleClicked()
+                    ),
                     const SizedBox(width: 20),
-                    customSocialButton("assets/images/social_icons/google.svg", () {
-                      // TODO: Handle Google login
-                    }),
+                    customSocialButton(
+                        "assets/images/social_icons/google.svg", () =>
+                        controller.loginWithGoogleClicked()
+                    ),
                     const SizedBox(width: 20),
-                    customSocialButton("assets/images/social_icons/facebook.svg", () {
-                      // TODO: Handle Facebook login
-                    }),
+                    customSocialButton(
+                        "assets/images/social_icons/facebook.svg", () =>
+                        controller.loginWithFacebookClicked()
+                    ),
                   ],
                 ),
                 const SizedBox(height: 20),

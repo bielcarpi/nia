@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Nia Flutter</string>
+	<string>Nia</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>nia_flutter</string>
+	<string>nia_assistant</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -41,9 +41,20 @@
 	<key>NSMicrophoneUsageDescription</key>
     <string>This app requires microphone access to record audio</string>
     <key>NSCameraUsageDescription</key>
-    <string>Esta aplicación necesita acceso a la cámara para tomar fotos.</string>
+    <string>We need access to the Camera to take photos.</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Esta aplicación necesita acceso a la galería para seleccionar fotos.</string>
-
+    <string>We need access to the Gallery to select photos.</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.669575167418-sl1p401dhg17ebmsnlcm668h299cd7ie</string>
+        </array>
+      </dict>
+      <!-- Add more URL types here if needed -->
+    </array>
 </dict>
 </plist>

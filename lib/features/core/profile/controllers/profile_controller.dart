@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nia_flutter/features/authentication/views/authdecision_screen.dart';
 import 'package:nia_flutter/features/core/profile/views/niaInformation.dart';
 import 'package:nia_flutter/features/core/profile/views/subscription_screen.dart';
 import '../../../../repository/bucket_repository/bucket_repository.dart';
@@ -50,14 +51,8 @@ class ProfileController extends GetxController {
 
   void signOut() {
     AuthenticationRepository.instance.firebaseAuthSignOut().then((_) {
-      Get.lazyPut(()=>LoginController()); // Create a new instance of LoginController
-      Get.offAll(() => LoginScreen()); // Navigate to LoginScreen
+      Get.offAll(() => const AuthDecisionScreen());
     });
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
   }
 
   selectTab(BuildContext context, int index) {}

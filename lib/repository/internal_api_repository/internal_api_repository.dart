@@ -48,7 +48,9 @@ class InternalAPIRepository extends GetxController {
       },
       onDone: () async {
         // Save chunks to file, then play
-        await tempFile.delete();
+        if(await tempFile.exists()) {
+          await tempFile.delete();
+        }
         for (var chunk in chunks) {
           await tempFile.writeAsBytes(chunk, mode: FileMode.append);
         }

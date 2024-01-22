@@ -54,7 +54,7 @@ flutter_native_splash:
   color: "#FFFFFF"
   image: "assets/images/logo/nia.png"
   android: true
-  ios: true
+  ios: truet
   android_12:
     color: "#FFFFFF"
 

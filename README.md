@@ -58,7 +58,7 @@ lib/
 ### Installation
 ```bash
 # Clone the repository
-git clone https://github.com/bielcarpi/nia_flutter.git
+git clone https://github.com/bielcarpi/nia.git
 
 # Install dependencies
 flutter pub get

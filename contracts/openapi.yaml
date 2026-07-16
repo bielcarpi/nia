@@ -1,0 +1,693 @@
+openapi: 3.1.0
+info:
+  title: Nia API
+  version: 2.0.0
+  summary: Control-plane API for Nia's realtime language tutor
+  description: |
+    Nia's API authenticates learners, owns tutor policy, issues short-lived
+    OpenAI Realtime client secrets, stores text turns, and creates post-session
+    feedback. Audio travels directly between the client and OpenAI over WebRTC;
+    it is not uploaded to this API.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+tags:
+  - name: System
+    description: Process health and dependency readiness
+  - name: Profile
+    description: Learner preferences
+  - name: Realtime
+    description: Short-lived realtime session bootstrap
+  - name: Conversations
+    description: Transcript lifecycle and feedback
+security:
+  - FirebaseBearer: []
+    FirebaseAppCheck: []
+  - LocalDemoBearer: []
+paths:
+  /healthz:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: Check process health
+      description: Liveness probe. It does not call downstream services.
+      security: []
+      responses:
+        '200':
+          description: The process is alive.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /readyz:
+    get:
+      tags: [System]
+      operationId: getReadiness
+      summary: Check dependency readiness
+      description: Dependency check used by startup probes, smoke tests, and operators.
+      security: []
+      responses:
+        '200':
+          description: Required dependencies are ready.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/me/preferences:
+    get:
+      tags: [Profile]
+      operationId: getPreferences
+      summary: Get learner preferences
+      responses:
+        '200':
+          description: Current preferences, including server defaults when none were saved.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      tags: [Profile]
+      operationId: updatePreferences
+      summary: Update learner preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferencesPatch'
+      responses:
+        '200':
+          description: Updated preferences.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/realtime/sessions:
+    post:
+      tags: [Realtime]
+      operationId: createRealtimeSession
+      summary: Start a realtime tutoring session
+      description: |
+        Creates a conversation and returns connection metadata. Production mode
+        includes a short-lived OpenAI client secret. Credential-free demo mode
+        returns `client_secret: null` and `transport: demo`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRealtimeSessionRequest'
+      responses:
+        '201':
+          description: Realtime session created.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRealtimeSessionResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/conversations:
+    get:
+      tags: [Conversations]
+      operationId: listConversations
+      summary: List the learner's conversations
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Conversations ordered from most recently updated.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/conversations/{conversation_id}:
+    parameters:
+      - $ref: '#/components/parameters/ConversationID'
+    get:
+      tags: [Conversations]
+      operationId: getConversation
+      summary: Get a conversation and its feedback
+      responses:
+        '200':
+          description: Conversation detail.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      tags: [Conversations]
+      operationId: deleteConversation
+      summary: Delete a conversation
+      description: Permanently deletes the transcript and generated feedback.
+      responses:
+        '204':
+          description: Conversation deleted.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/conversations/{conversation_id}/turns/{turn_id}:
+    parameters:
+      - $ref: '#/components/parameters/ConversationID'
+      - $ref: '#/components/parameters/TurnID'
+    put:
+      tags: [Conversations]
+      operationId: upsertConversationTurn
+      summary: Store a transcript turn idempotently
+      description: Reusing a turn ID replaces that turn instead of duplicating it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertTurnRequest'
+      responses:
+        '200':
+          description: Turn stored.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turn'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/conversations/{conversation_id}/complete:
+    parameters:
+      - $ref: '#/components/parameters/ConversationID'
+    post:
+      tags: [Conversations]
+      operationId: completeConversation
+      summary: Complete a conversation and generate feedback
+      description: |
+        Requires at least one stored learner/user turn. An assistant greeting by
+        itself cannot be completed or consume feedback-generation quota. The
+        operation is idempotent after feedback has been generated successfully.
+      responses:
+        '200':
+          description: Completed conversation with feedback.
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/RequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/ConversationNotReady'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    FirebaseBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID token
+      description: Firebase ID token required by production protected routes.
+    FirebaseAppCheck:
+      type: apiKey
+      in: header
+      name: X-Firebase-AppCheck
+      description: Valid Firebase App Check token required together with the production bearer token.
+    LocalDemoBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: local demo token
+      description: Fixed local demo identity. Production mode always rejects this credential.
+  headers:
+    RequestID:
+      description: Correlation ID generated or accepted by the API.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+        example: 01JNA6HF7BP6KS7X1Q43KM9N33
+    RetryAfter:
+      description: Seconds before another request should be attempted.
+      schema:
+        type: integer
+        minimum: 1
+        example: 30
+  parameters:
+    ConversationID:
+      name: conversation_id
+      in: path
+      required: true
+      description: Server-issued conversation identifier.
+      schema:
+        $ref: '#/components/schemas/Identifier'
+    TurnID:
+      name: turn_id
+      in: path
+      required: true
+      description: Client-issued idempotency identifier for a transcript turn.
+      schema:
+        $ref: '#/components/schemas/Identifier'
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque cursor returned by the previous page.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 512
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Maximum number of conversations to return.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 20
+  responses:
+    BadRequest:
+      description: The request is malformed or failed validation.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Unauthorized:
+      description: Authentication is missing or invalid.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    NotFound:
+      description: The resource does not exist or is not owned by this learner.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Conflict:
+      description: The resource state does not allow this operation.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    ConversationNotReady:
+      description: No learner/user turn has been stored, so the conversation cannot be completed.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    RateLimited:
+      description: The learner exceeded a rate or concurrency limit.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    InternalError:
+      description: An unexpected server error occurred.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    BadGateway:
+      description: A required provider returned an invalid or rejected response.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    Unavailable:
+      description: A required dependency is temporarily unavailable.
+      headers:
+        X-Request-ID:
+          $ref: '#/components/headers/RequestID'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+  schemas:
+    Identifier:
+      type: string
+      pattern: '^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$'
+      example: conv_01JNA6HF7BP6KS7X1Q43KM9N33
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+    Preferences:
+      type: object
+      additionalProperties: false
+      required: [target_language, level, topic, correction_style]
+      properties:
+        target_language:
+          type: string
+          description: Language practised in the current product version.
+          enum: [en, es, ca]
+          example: es
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        topic:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Ordering dinner at a restaurant
+        correction_style:
+          type: string
+          enum: [gentle, immediate, summary]
+    PreferencesPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        target_language:
+          type: string
+          enum: [en, es, ca]
+        level:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        topic:
+          type: string
+          minLength: 1
+          maxLength: 120
+        correction_style:
+          type: string
+          enum: [gentle, immediate, summary]
+    CreateRealtimeSessionRequest:
+      type: object
+      additionalProperties: false
+      required: [preferences]
+      properties:
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+    CreateRealtimeSessionResponse:
+      type: object
+      additionalProperties: false
+      required: [conversation, client_secret, realtime]
+      properties:
+        conversation:
+          $ref: '#/components/schemas/ConversationSummary'
+        client_secret:
+          oneOf:
+            - $ref: '#/components/schemas/ClientSecret'
+            - type: 'null'
+        realtime:
+          $ref: '#/components/schemas/RealtimeConnection'
+    ClientSecret:
+      type: object
+      additionalProperties: false
+      required: [value, expires_at]
+      properties:
+        value:
+          type: string
+          readOnly: true
+          minLength: 1
+          description: Short-lived provider credential. Never persist or log it.
+        expires_at:
+          type: integer
+          format: int64
+          description: Unix timestamp at which the client secret expires.
+          example: 1774000000
+    RealtimeConnection:
+      type: object
+      additionalProperties: false
+      required: [transport, endpoint, model]
+      properties:
+        transport:
+          type: string
+          enum: [webrtc, demo]
+        endpoint:
+          type: string
+          format: uri
+          example: https://api.openai.com/v1/realtime/calls
+        model:
+          type: string
+          minLength: 1
+          example: gpt-realtime-2.1
+    ConversationStatus:
+      type: string
+      enum: [active, completed]
+    ConversationSummary:
+      type: object
+      additionalProperties: false
+      required: [id, status, preferences, turn_count, created_at, updated_at]
+      properties:
+        id:
+          $ref: '#/components/schemas/Identifier'
+        status:
+          $ref: '#/components/schemas/ConversationStatus'
+        preferences:
+          $ref: '#/components/schemas/Preferences'
+        turn_count:
+          type: integer
+          minimum: 0
+          default: 0
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    ConversationList:
+      type: object
+      additionalProperties: false
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationSummary'
+        next_cursor:
+          type: string
+          minLength: 1
+          maxLength: 512
+          description: Omitted when there is no next page.
+    ConversationDetail:
+      type: object
+      additionalProperties: false
+      required: [conversation, turns, feedback]
+      properties:
+        conversation:
+          $ref: '#/components/schemas/ConversationSummary'
+        turns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Turn'
+        feedback:
+          oneOf:
+            - $ref: '#/components/schemas/Feedback'
+            - type: 'null'
+    UpsertTurnRequest:
+      type: object
+      additionalProperties: false
+      required: [role, text, occurred_at]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        text:
+          type: string
+          minLength: 1
+          maxLength: 8000
+        occurred_at:
+          type: string
+          format: date-time
+    Turn:
+      type: object
+      additionalProperties: false
+      required: [id, role, text, occurred_at]
+      properties:
+        id:
+          $ref: '#/components/schemas/Identifier'
+        role:
+          type: string
+          enum: [user, assistant]
+        text:
+          type: string
+          minLength: 1
+          maxLength: 8000
+        occurred_at:
+          type: string
+          format: date-time
+    Feedback:
+      type: object
+      additionalProperties: false
+      required: [summary, strengths, corrections, next_steps, generated_at]
+      properties:
+        summary:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        strengths:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        corrections:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/Correction'
+        next_steps:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            minLength: 1
+            maxLength: 500
+        generated_at:
+          type: string
+          format: date-time
+    Correction:
+      type: object
+      additionalProperties: false
+      required: [original, corrected, explanation]
+      properties:
+        original:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        corrected:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        explanation:
+          type: string
+          minLength: 1
+          maxLength: 1000
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/APIError'
+    APIError:
+      type: object
+      additionalProperties: false
+      required: [code, message, request_id]
+      properties:
+        code:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+          example: invalid_request
+        message:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: target_language must be one of en, es, or ca
+        request_id:
+          type: string
+          minLength: 8
+          maxLength: 128

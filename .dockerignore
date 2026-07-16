@@ -1,0 +1,15 @@
+.git
+.github
+.dart_tool
+.firebase
+.idea
+.terraform
+.vscode
+**/build
+**/coverage
+**/.env*
+**/*.tfstate*
+**/service-account*.json
+docs
+infra
+reports

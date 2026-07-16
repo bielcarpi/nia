@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // All product data crosses the Go API authorization boundary. The Firebase
+    // Admin SDK used by Cloud Run is controlled by IAM and bypasses these
+    // client rules; mobile and web SDKs receive no direct database access.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

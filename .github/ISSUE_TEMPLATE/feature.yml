@@ -1,0 +1,29 @@
+name: Feature proposal
+description: Propose a scoped user or operator improvement
+title: "feat: "
+labels: [enhancement, needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Who has the problem and what cannot they do today?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe behavior, not a specific implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and evidence
+      description: Security, privacy, latency, cost, compatibility, or usage evidence.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Smaller alternatives considered
+      description: Can this fit the existing Flutter + Go + Firebase + OpenAI boundary?

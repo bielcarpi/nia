@@ -1,0 +1,53 @@
+name: Bug report
+description: Report reproducible incorrect behavior
+title: "bug: "
+labels: [bug, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include credentials, ID tokens, private transcripts, or security vulnerabilities. Report vulnerabilities privately through the Security tab.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Flutter app
+        - Go API
+        - API contract
+        - Infrastructure or CI
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Actual behavior
+      description: What happened, including safe error codes and request IDs when available.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal steps using demo or synthetic data.
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Revision and environment
+      placeholder: Git SHA, demo/production, platform
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety check
+      options:
+        - label: I removed credentials, tokens, private learner data, and raw transcripts.
+          required: true

@@ -1,0 +1,20 @@
+project_id          = "replace-with-gcp-project-id"
+firebase_project_id = "replace-with-firebase-project-id"
+region              = "europe-west1"
+
+image = "europe-west1-docker.pkg.dev/replace-with-gcp-project-id/nia/api@sha256:replace-with-64-lowercase-hex-characters"
+
+runtime_service_account_email = "nia-api@replace-with-gcp-project-id.iam.gserviceaccount.com"
+openai_secret_id              = "nia-openai-api-key"
+openai_secret_version         = "1"
+
+allowed_origins = [
+  "https://replace-with-production-origin.example",
+]
+
+# Existing channels are composed in, never created with contact details here.
+notification_channel_ids = []
+
+deletion_protection = true
+min_instances       = 0
+max_instances       = 10

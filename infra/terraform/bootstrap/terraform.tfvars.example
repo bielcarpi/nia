@@ -1,0 +1,10 @@
+project_id = "replace-with-gcp-project-id"
+region     = "europe-west1"
+
+# Leave true for at least one cleanup evaluation cycle, inspect audit logs,
+# then set false to delete images older than 90 days while keeping 20 recent.
+artifact_cleanup_dry_run = true
+
+# Set true only for a new project without a default Firestore database.
+manage_firestore_database = false
+firestore_location         = "eur3"

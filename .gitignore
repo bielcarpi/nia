@@ -29,7 +29,7 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+**/build/
 
 # Symbolication related
 app.*.symbols
@@ -38,6 +38,48 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key
+service-account*.json
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+**/ios/firebase_app_id_file.json
+**/lib/firebase_options.dart
+
+# Go
+coverage.out
+coverage.html
+*.test
+vendor/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Firebase Emulator Suite
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Test and scanner output
+coverage/
+reports/
+*.sarif

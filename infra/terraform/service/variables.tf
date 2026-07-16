@@ -8,16 +8,6 @@ variable "project_id" {
   }
 }
 
-variable "firebase_project_id" {
-  description = "Firebase project whose ID tokens the API accepts."
-  type        = string
-
-  validation {
-    condition     = can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", var.firebase_project_id))
-    error_message = "firebase_project_id must be a valid Firebase project ID."
-  }
-}
-
 variable "region" {
   description = "Cloud Run region."
   type        = string
@@ -66,8 +56,8 @@ variable "allowed_origins" {
   type        = set(string)
 
   validation {
-    condition     = length(var.allowed_origins) > 0 && alltrue([for origin in var.allowed_origins : startswith(origin, "https://") && !strcontains(origin, "*")])
-    error_message = "allowed_origins must contain at least one exact HTTPS origin and no wildcards."
+    condition     = length(var.allowed_origins) > 0 && alltrue([for origin in var.allowed_origins : can(regex("^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?$", origin)) && !strcontains(origin, "*")])
+    error_message = "allowed_origins must contain at least one exact HTTPS origin without paths, queries, fragments, user info, or wildcards."
   }
 }
 
@@ -83,7 +73,7 @@ variable "notification_channel_ids" {
 }
 
 variable "server_error_alert_threshold_count" {
-  description = "Five-minute Cloud Run 5xx count that must be exceeded to open an incident."
+  description = "Initial low-traffic tripwire: five-minute Cloud Run 5xx count that opens an incident when exceeded. Tune after deployment."
   type        = number
   default     = 5
 
@@ -94,7 +84,7 @@ variable "server_error_alert_threshold_count" {
 }
 
 variable "latency_alert_threshold_ms" {
-  description = "Successful-request p95 latency threshold sustained for five minutes. Tune from observed traffic."
+  description = "Initial stuck-request signal: successful-request p95 latency sustained for five minutes. This is not an SLO; tune after deployment."
   type        = number
   default     = 10000
 

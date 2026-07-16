@@ -1,8 +1,9 @@
 # Architecture
 
-Nia is deliberately a two-application monorepo: a Flutter client and one Go
-control-plane API. The client owns realtime media. The API owns identity,
-policy, provider credentials, persistence, limits, and feedback.
+Nia has two deployable applications: a Flutter client and one Go control-plane
+API. The client owns realtime media. The API owns identity, provider credential
+issuance, persistence, limits, and feedback, and supplies the initial tutor
+configuration.
 
 This split keeps the latency-sensitive audio path short without exposing a
 long-lived OpenAI key or putting security decisions in the client.
@@ -31,7 +32,7 @@ one place.
 | Component | Owns | Does not own |
 | --- | --- | --- |
 | Flutter app | Sign-in UX, preferences UX, WebRTC lifecycle, transcript display, local interaction state | Provider API keys, authorization policy, durable records |
-| Go API | Token verification, tutor policy, ephemeral session issuance, quotas, transcript writes, feedback orchestration, deletion | Audio transport, mobile UI, long-running workflow infrastructure |
+| Go API | Token verification, initial tutor configuration, ephemeral session issuance, quotas, transcript writes, feedback orchestration, deletion | Audio transport, immutable control of a direct provider session, mobile UI |
 | Firebase Authentication | End-user identity and ID-token issuance | Nia authorization decisions |
 | Firestore | Durable preferences, conversation text, feedback | Raw audio or provider credentials |
 | OpenAI Realtime API | Low-latency model audio and realtime events | Nia user records or retention policy |
@@ -56,7 +57,7 @@ sequenceDiagram
 
     C->>A: POST /api/v1/realtime/sessions + ID token
     A->>F: Verify ID token
-    A->>A: Validate preferences and apply tutor policy
+    A->>A: Validate preferences and build initial tutor settings
     A->>D: Create owned conversation
     A->>O: Create short-lived Realtime client secret
     O-->>A: Secret + expiry
@@ -68,6 +69,13 @@ sequenceDiagram
 
 Production logs include correlation metadata and provider request identifiers,
 but never the client secret, authorization header, transcript text, or audio.
+
+The direct connection is a deliberate trust trade-off. OpenAI's WebRTC flow lets
+the client update the Realtime session after connecting, so a modified client
+with a still-valid ephemeral secret can override those initial settings. Nia's
+API still enforces identity, issuance limits, conversation ownership, transcript
+bounds, and persistence. Requirements for immutable tutor policy would move the
+session to a mediated or server-controlled transport.
 
 ### Persist and complete a conversation
 
@@ -84,18 +92,28 @@ sequenceDiagram
         A-->>C: Stored turn
     end
     C->>A: POST /conversations/{id}/complete
-    A->>D: Read ordered text turns
+    A->>D: Atomically claim completion + read ordered turns
+    D-->>A: Short-lived lease acquired
     A->>O: Generate typed feedback
     O-->>A: Structured feedback
-    A->>D: Mark complete + store feedback
+    A->>D: Store feedback with the matching lease
     A-->>C: Conversation detail
 ```
 
 Client-generated turn IDs make retries safe. The completion operation returns
 the existing result after a successful completion, so a network retry does not
-generate duplicate feedback. Completion is accepted only after at least one
-learner/user turn is durable; an assistant greeting alone cannot spend the
-feedback-generation quota.
+generate duplicate feedback. Before calling the provider, Firestore atomically
+claims a short lease for that conversation. A concurrent API instance receives
+a retryable conflict instead of generating a second review. Provider failures
+release the lease; after a provider success, the lease token must match the
+write that marks the conversation complete. Completion is accepted only after
+at least one learner/user turn is durable, so an assistant greeting alone
+cannot spend the feedback-generation quota.
+
+New transcript turns are accepted for two hours after conversation creation and
+the store atomically caps each conversation at 200 turns. Existing turn IDs can
+still be retried at the cap. A 120-write-per-minute user window adds an
+instance-local brake; it is not presented as a distributed quota.
 
 ## Data model
 
@@ -133,34 +151,35 @@ process and is never inferred from a missing credential.
 
 - Cloud Run instances are stateless. Session and transcript state lives in
   Firestore, so horizontal scaling does not require sticky sessions.
-- `/healthz` is a process-only liveness probe. `/readyz` checks whether required
-  dependencies are usable and backs the Cloud Run startup and operator checks.
+- `/healthz` is a process-only liveness probe. `/readyz` checks persistence
+  readiness and backs the Cloud Run startup check. The authenticated smoke flow
+  proves Firebase verification, App Check, and OpenAI access.
 - The server handles `SIGTERM`, stops accepting new work, and drains in-flight
   HTTP requests within Cloud Run's termination window.
-- Request deadlines bound provider calls. A failed feedback call leaves the
-  stored transcript recoverable and completion retryable.
-- Per-identity session/feedback windows plus per-instance request and provider
-  concurrency reduce accidental abuse. The in-memory windows are intentionally
-  approximate across autoscaled instances; hard spend enforcement needs a
-  shared quota ledger or provider/platform budget controls when traffic merits
-  that complexity.
+- Request deadlines bound provider calls. Completion and deletion leases block
+  conflicting writes across Cloud Run instances; a failed provider call leaves
+  the stored transcript recoverable and completion retryable.
+- Per-identity session, feedback, and turn-write windows plus per-instance
+  request and provider concurrency reduce accidental abuse. The in-memory
+  windows are intentionally approximate across autoscaled instances; hard spend
+  enforcement needs a shared quota ledger or provider/platform budget controls
+  when traffic merits that complexity.
 - Request IDs cross the client/API boundary; provider request IDs are recorded
   separately for support correlation.
 
-See [operations.md](operations.md) for proposed service objectives, alerts, and
-runbooks. Those objectives are targets for a deployment, not claims about a
-currently hosted service.
+See [operations.md](operations.md) for the signals and diagnostics to verify on
+the first cloud deployment.
 
-## Deliberate omissions
+## Why this is not a microservice system
 
 Nia is not split into microservices and does not use Kubernetes, Redis,
 GraphQL, or a workflow engine. The workload is a small control plane around a
 provider-managed realtime data path. Those systems would add operational
 surface before they add meaningful reliability.
 
-Future extraction should be driven by evidence: an independently scaling
-workload, a distinct security boundary, or a release cadence the modular Go
-code can no longer support cleanly.
+Split a component out only when it has an independently scaling workload, a new
+security boundary, or a release cadence the modular Go service can no longer
+support cleanly.
 
 ## Decisions
 

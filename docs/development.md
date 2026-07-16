@@ -1,7 +1,7 @@
 # Development
 
-Nia is built so the default reviewer path has no cloud dependency while the
-same domain logic can run against production adapters explicitly.
+Local development starts without a cloud dependency. The same domain logic can
+then be exercised with Firebase, Firestore, and OpenAI adapters as needed.
 
 ## Tooling
 
@@ -9,13 +9,17 @@ Required for the complete local check:
 
 - Go version declared by `apps/api/go.mod`;
 - current stable Flutter and Dart SDKs;
-- Node.js 24+ for the pinned Redocly CLI invocation;
+- Node.js 22.12+ on the 22.x line for the pinned Firebase and Redocly CLIs;
+- Java 21+ for the Firestore emulator;
 - Terraform 1.9+; and
 - `jq` for contract/demo commands.
 
-Firebase CLI and Docker are optional unless you run emulators or build the API
-image. `make doctor` checks the core toolchain, `make doctor-full` checks every
-repository tool, and `make bootstrap` resolves Go and Flutter dependencies.
+The complete check downloads the pinned `firebase-tools` package through
+`npx`; it does not depend on an unversioned global CLI. A global Firebase CLI is
+only needed for the long-running `make firebase-emulators` target, and Docker is
+only needed to build the API image. `make doctor` checks the core toolchain,
+`make doctor-full` checks every repository tool, and `make bootstrap` resolves
+Go and Flutter dependencies.
 
 ## Credential-free demo mode
 
@@ -37,8 +41,8 @@ checked-in values explicitly select:
 - in-memory storage; and
 - deterministic session and feedback providers.
 
-No missing credential silently triggers demo behavior. Production mode has its
-own validation and must not start without its required project and provider
+Demo behavior is selected by mode, never inferred from a missing credential.
+Production mode will not start without its required project and provider
 configuration.
 
 The Flutter demo is selected at compile time with:
@@ -75,15 +79,14 @@ cp .env.example .env
 | `NIA_REQUIRE_APP_CHECK` | `false` | Must be true for public production issuance |
 | `NIA_ALLOWED_ORIGINS` | local exact origins | Exact browser origins, comma-separated |
 | `OPENAI_API_KEY` | empty | Standard server-only provider credential |
-| `NIA_REALTIME_MODEL` | current checked-in default | Server-owned Realtime model policy |
-| `NIA_REALTIME_VOICE` | `marin` | Server-owned voice policy |
+| `NIA_REALTIME_MODEL` | current checked-in default | Initial Realtime model setting |
+| `NIA_REALTIME_VOICE` | `marin` | Initial Realtime voice setting |
 | `NIA_FEEDBACK_MODEL` | current checked-in default | Structured feedback model |
+| `NIA_TURN_LIMIT_PER_MINUTE` | `120` | Instance-local per-user transcript write guardrail |
 | timeout/limit settings | conservative defaults | Bound requests, shutdown, body size, and per-user usage |
 
-The model names are defaults reviewed on the date of the relevant commit, not a
-promise that a provider alias will remain available forever. Keep them
-configurable, validate provider changes in staging, and update docs and tests
-together.
+Model IDs remain configurable because provider aliases change. Validate a model
+change in staging and update its contract tests and documentation together.
 
 Never place `OPENAI_API_KEY` in a Flutter Dart define. Dart defines are compiled
 into client artifacts and are not secrets.
@@ -121,9 +124,8 @@ authorization tests at the API boundary.
 
 ## Mixed adapter testing
 
-Adapters can be combined intentionally during development. For example, demo
-identity + memory store + live OpenAI helps inspect provider integration without
-writing Firebase data:
+Adapters can be combined during development. For example, demo identity + memory
+store + live OpenAI isolates provider integration without writing Firebase data:
 
 ```dotenv
 NIA_ENV=local
@@ -151,7 +153,7 @@ make vuln-go         # reachable Go vulnerability analysis
 make mobile-check    # analyze, test, and release-build the web demo
 make openapi-lint    # Redocly contract checks
 make terraform-check # fmt + init without backend + validate
-make check           # all of the above read-only checks
+make check           # complete suite, including emulators and release builds
 ```
 
 The API and mobile directories also document component-focused commands.
@@ -176,7 +178,7 @@ decision rather than an undocumented deploy.
 ### The API refuses to start
 
 Read the typed configuration error. Check the selected modes first: a Firebase,
-Firestore, or OpenAI mode deliberately requires its own settings. Do not bypass
+Firestore, or OpenAI mode requires its own settings. Do not bypass
 the check by adding fallback credentials or weakening production validation.
 
 ### The mobile app cannot reach localhost

@@ -1,31 +1,39 @@
-# ADR 0003: One stateless Cloud Run API with Firestore
+# ADR 0003: Run one stateless API on Cloud Run
 
 - Status: accepted
 - Date: 2026-07-16
 
-## Context
+## Workload
 
-Nia needs authenticated HTTP endpoints, short provider calls, durable
-conversation text, and automatic scale-to-zero behavior. It does not need a
-cluster scheduler or a fleet of independently deployed services.
+The backend handles short authenticated HTTP requests: verify identity, create a
+provider session, write final text turns, generate feedback, list history, and
+delete a conversation. Audio is not part of this service, and there is no
+long-running background job today.
 
-## Decision
+## Choice
 
-Deploy one stateless Go HTTP service on Cloud Run and store user preferences,
-conversation text, and feedback in Firestore. Use Firebase Authentication as
-the user identity source. Keep provider and store boundaries as Go interfaces
-so tests do not depend on cloud services.
+Deploy one Go service on Cloud Run and store preferences, conversation text, and
+feedback in Firestore. Firebase Authentication supplies identity. A dedicated
+runtime service account can access Firestore and one Secret Manager secret.
 
-Provision the production runtime with Terraform. Store the OpenAI key in Secret
-Manager and grant the Cloud Run service account access to that secret only.
+The service stays stateless: durable data crosses the store interface in
+[`domain/model.go`](../../apps/api/internal/domain/model.go), and the production
+shape is captured in [`infra/terraform`](../../infra/terraform).
 
-## Consequences
+## Why not the larger options
 
-- Operations stay small: one image, one service, one database, one secret, and
-  one identity provider.
-- Horizontal scaling is natural because no request depends on instance memory.
-- Firestore query shapes must be designed and indexed explicitly.
-- Cloud Run cold starts exist; minimum instances can be raised after latency and
-  cost measurements justify it.
-- A future long-running or asynchronous workload may need a queue, but that
-  decision is deferred until the workload exists.
+- Kubernetes would introduce a cluster and scheduler for one HTTP container.
+- Separate session, transcript, and feedback services would add network and
+  deployment boundaries without independent scaling evidence.
+- Direct client access to Firestore would duplicate authorization rules outside
+  the Go API and expose product query shapes to every client release.
+
+## Operational consequences
+
+- Cloud Run can scale to zero; cold-start latency must be measured before paying
+  for minimum instances.
+- Firestore indexes follow actual query shapes and remain deployment artifacts.
+- Old and new Cloud Run revisions share data, so schema changes must remain
+  backward compatible through the rollback window.
+- A future asynchronous workload may justify a queue or worker, but no such
+  deployment unit exists until that workload appears.

@@ -57,7 +57,7 @@ model.
 
 A useful pull request explains:
 
-- the user or operator problem;
+- the problem it solves;
 - the chosen behavior and meaningful trade-offs;
 - how it was verified; and
 - any deployment, migration, rollback, or security impact.

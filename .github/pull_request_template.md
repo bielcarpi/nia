@@ -1,19 +1,19 @@
-## Outcome
+## Why
 
-<!-- What user or operator outcome changes? -->
+<!-- What problem does this solve? -->
 
-## Design
+## What changed
 
-<!-- Key behavior, boundaries, and trade-offs. Link an ADR for a major decision. -->
+<!-- Describe the behavior and any trade-off a reviewer should know. -->
 
-## Verification
+## Tested
 
-- [ ] `make check`
-- [ ] New or changed behavior has deterministic tests
-- [ ] Public API behavior is reflected in `contracts/openapi.yaml`
-- [ ] No credential, personal data, raw audio, or real transcript is in code/logs/fixtures
-- [ ] Deployment, migration, rollback, and documentation impact is addressed
+<!-- List the commands and manual flows you actually ran. -->
 
-## Evidence
+## Product evidence
 
-<!-- Commands, test output, screenshots captured from a real run, or other review evidence. -->
+<!-- For UI changes, attach a screenshot or recording from a real build. -->
+
+- [ ] API behavior is reflected in `contracts/openapi.yaml` when needed
+- [ ] No credential, private learner data, or raw audio is included
+- [ ] Deployment or rollback impact is documented when needed

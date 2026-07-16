@@ -52,6 +52,37 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
+  api-firestore:
+    name: Firestore integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - name: Set up Java
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: Run Firestore lifecycle tests
+        run: >-
+          npx --yes firebase-tools@15.24.0 emulators:exec
+          --config firebase.json
+          --project nia-api-ci
+          --only firestore
+          "go -C apps/api test -count=1 -race ./internal/store/firestore"
+
   mobile:
     name: Flutter app
     runs-on: ubuntu-latest
@@ -96,7 +127,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 24
+          node-version: 22.12.0
       - name: Lint OpenAPI
         run: npx --yes @redocly/cli@2.39.0 lint contracts/openapi.yaml
       - name: Validate Firebase JSON
@@ -124,7 +155,6 @@ jobs:
       - name: Check out source
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          fetch-depth: 0
           persist-credentials: false
       - name: Scan dependencies, configuration, and secrets
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

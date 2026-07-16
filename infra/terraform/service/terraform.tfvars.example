@@ -1,6 +1,5 @@
-project_id          = "replace-with-gcp-project-id"
-firebase_project_id = "replace-with-firebase-project-id"
-region              = "europe-west1"
+project_id = "replace-with-gcp-and-firebase-project-id"
+region     = "europe-west1"
 
 image = "europe-west1-docker.pkg.dev/replace-with-gcp-project-id/nia/api@sha256:replace-with-64-lowercase-hex-characters"
 
@@ -14,6 +13,10 @@ allowed_origins = [
 
 # Existing channels are composed in, never created with contact details here.
 notification_channel_ids = []
+
+# Bootstrap alert thresholds. Replace them after measuring representative flows.
+server_error_alert_threshold_count = 5
+latency_alert_threshold_ms          = 10000
 
 deletion_protection = true
 min_instances       = 0

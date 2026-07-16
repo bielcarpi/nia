@@ -1,8 +1,7 @@
 # Security model
 
-This document describes the intended production boundary and the remaining
-deployment responsibilities. Demo mode is for local review only and is not an
-authentication substitute.
+This document describes the production trust boundary and the controls that a
+deployment must supply. Demo authentication is local-only.
 
 ## Trust boundaries
 
@@ -12,8 +11,10 @@ authentication substitute.
    signature, and expiry before using the Firebase UID as an authorization key.
    Production requests also present an App Check token in
    `X-Firebase-AppCheck`; the two checks serve different purposes.
-3. The Go API is the product trust boundary. It decides conversation ownership,
-   applies limits, constructs provider policy, and controls persistence.
+3. The Go API is the product trust boundary for identity, conversation
+   ownership, issuance, transcript bounds, and persistence. It supplies initial
+   Realtime settings but cannot make them immutable on a client-owned direct
+   provider connection.
 4. OpenAI and Google Cloud are external processors. Send only the data required
    for the tutoring interaction and configure their retention and regional
    settings for the deployment's obligations.
@@ -28,9 +29,9 @@ authentication substitute.
 | Stolen Firebase ID token | TLS, short token lifetime, server verification, least-privilege API | Protect device/session and configure Firebase account protections |
 | Cross-user record access | Derive a hashed storage owner key from the verified UID; never trust an owner field; return `404` for non-owned IDs | Authorization regression tests and Firestore data review |
 | Standard OpenAI key extracted from app | Key exists only in Secret Manager and Cloud Run memory; client receives an ephemeral secret | Rotate keys and audit secret access |
-| Realtime session abuse or cost spike | Authenticated issuance, per-instance user windows, bounded concurrency and session policy | Shared quotas when strict enforcement is needed, provider budgets, alerts, edge controls |
-| Prompt manipulation | Server-owned tutor instructions and bounded preference fields | Treat all model output as untrusted content |
-| Replay/duplicate writes | Client turn ID plus idempotent `PUT`; owned conversation lookup | Preserve idempotency semantics across store adapters |
+| Realtime session abuse or cost spike | Authenticated issuance, atomic 200-turn and two-hour conversation bounds, per-instance user windows, bounded concurrency | Shared quotas when strict enforcement is needed, provider budgets, alerts, edge controls |
+| Prompt or session manipulation | Bounded preferences and server-supplied initial instructions | A valid direct client can update its provider session; immutable policy requires mediation; treat model output as untrusted |
+| Replay/duplicate writes | Client turn ID plus idempotent `PUT`; atomic completion and deletion leases | Preserve idempotency and lease semantics across store adapters |
 | Sensitive content in logs | Structured metadata allowlist; no bodies, transcripts, secrets, or auth headers | Review sinks, sampling, access, and retention |
 | Direct Firestore access | Production Firestore rules deny client reads and writes; API uses its service identity | Deploy and test rules with the intended Firebase project |
 | Malicious dependency or image | Locked dependencies, Dependabot, CodeQL, `govulncheck`, Trivy filesystem and image scans | Review updates and maintain patch cadence |
@@ -39,7 +40,7 @@ authentication substitute.
 ## Secret lifecycle
 
 - Secret Manager owns the standard OpenAI API key. Terraform creates the secret
-  container but deliberately does not place secret material in state.
+  container without placing secret material in state.
 - Add secret versions through an input method that avoids shell history. Never
   use `-var openai_api_key=...`, commit a `.tfvars` secret, or put credentials in
   a Docker build argument.
@@ -55,7 +56,9 @@ authentication substitute.
 
 Nia's application data is text preferences, transcript turns, and generated
 feedback. Raw audio is outside the Nia API data path. The API exposes an owned
-conversation deletion endpoint that removes its transcript and feedback.
+conversation deletion endpoint that hides the record as soon as deletion starts
+and removes its transcript and feedback. A durable marker keeps partial cleanup
+private and retryable.
 
 A production operator must still define and publish:
 
@@ -65,8 +68,8 @@ A production operator must still define and publish:
 - age restrictions and parental-consent rules, if applicable; and
 - incident notification and processor agreements.
 
-This repository is an engineering reference, not evidence that those product
-and legal obligations have been completed.
+These product and legal responsibilities are deployment work; the repository
+does not automate them.
 
 ## HTTP and platform hardening
 

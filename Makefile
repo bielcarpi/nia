@@ -8,19 +8,20 @@ OPENAPI_SPEC := contracts/openapi.yaml
 REDOCLY_VERSION := 2.39.0
 STATICCHECK_VERSION := v0.7.0
 GOVULNCHECK_VERSION := v1.6.0
+FIREBASE_TOOLS_VERSION := 15.24.0
 TERRAFORM_DIRS := infra/terraform/bootstrap infra/terraform/service
 GO_FILES := $(shell find $(API_DIR) -type f -name '*.go' 2>/dev/null)
 
-.PHONY: help doctor doctor-full bootstrap format format-check lint-go test-go vuln-go mobile-check openapi-lint terraform-check check dev-api dev-mobile firebase-emulators docker-build
+.PHONY: help doctor doctor-full bootstrap format format-check lint-go test-go test-go-firestore vuln-go mobile-check openapi-lint terraform-check check dev-api dev-mobile firebase-emulators docker-build
 
 help: ## Show the common development commands.
 	@awk 'BEGIN {FS = ":.*## "; printf "Nia development targets:\n\n"} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 doctor: ## Confirm required local tools are available.
-	@for tool in go flutter dart; do command -v "$$tool" >/dev/null && printf 'ok  %s\n' "$$tool"; done
+	@for tool in go flutter dart; do command -v "$$tool" >/dev/null || { printf 'missing  %s\n' "$$tool"; exit 1; }; printf 'ok  %s\n' "$$tool"; done
 
 doctor-full: doctor ## Confirm contract, infrastructure, emulator, and container tools too.
-	@for tool in node npx terraform jq firebase docker; do command -v "$$tool" >/dev/null && printf 'ok  %s\n' "$$tool"; done
+	@for tool in node npx java terraform jq firebase docker; do command -v "$$tool" >/dev/null || { printf 'missing  %s\n' "$$tool"; exit 1; }; printf 'ok  %s\n' "$$tool"; done
 
 bootstrap: doctor ## Resolve Go and Flutter dependencies.
 	go -C $(API_DIR) mod download
@@ -43,6 +44,13 @@ lint-go: ## Run Go vet and Staticcheck.
 test-go: ## Run race-enabled Go tests with coverage.
 	go -C $(API_DIR) test -race -covermode=atomic -coverprofile=coverage.out ./...
 
+test-go-firestore: ## Run the Firestore store lifecycle against the local emulator.
+	npx --yes firebase-tools@$(FIREBASE_TOOLS_VERSION) emulators:exec \
+		--config firebase.json \
+		--project nia-api-local \
+		--only firestore \
+		"go -C $(API_DIR) test -count=1 -race ./internal/store/firestore"
+
 vuln-go: ## Scan reachable Go code for known vulnerabilities.
 	go -C $(API_DIR) run golang.org/x/vuln/cmd/govulncheck@$(GOVULNCHECK_VERSION) ./...
 
@@ -60,7 +68,7 @@ terraform-check: ## Initialize without a backend, then format-check and validate
 	terraform fmt -check -recursive infra/terraform
 	@for dir in $(TERRAFORM_DIRS); do terraform -chdir="$$dir" init -backend=false -input=false && terraform -chdir="$$dir" validate; done
 
-check: format-check lint-go test-go vuln-go mobile-check openapi-lint terraform-check ## Run the complete local CI suite.
+check: format-check lint-go test-go test-go-firestore vuln-go mobile-check openapi-lint terraform-check ## Run the complete local CI suite.
 
 dev-api: ## Start the credential-free API on http://localhost:8080.
 	@set -a; source .env.example; if [[ -f .env ]]; then source .env; fi; set +a; exec go -C $(API_DIR) run ./cmd/api

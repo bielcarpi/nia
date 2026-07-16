@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Nia is currently a showcase-stage project. Security fixes are made on the
+Nia is currently a pre-release project. Security fixes are made on the
 latest `main` revision; no released version line is receiving backports yet.
 
 ## Report a vulnerability

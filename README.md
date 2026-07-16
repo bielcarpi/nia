@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="apps/mobile/assets/images/logo/nia.png" alt="Nia" width="132">
+  <img src="apps/mobile/assets/images/logo/nia-mark.png" alt="Nia" width="132">
 </p>
 
 <h1 align="center">Nia</h1>
 
 <p align="center">
-  A voice-first AI language tutor, rebuilt as a security-conscious Flutter + Go reference application.
+  Practice a language out loud, then get a clear review of what went well and what to try next.
 </p>
 
 <p align="center">
@@ -16,63 +16,22 @@
   <img alt="Cloud Run" src="https://img.shields.io/badge/runtime-Cloud%20Run-4285F4?logo=googlecloud&logoColor=white">
 </p>
 
-Nia gives a learner a low-latency spoken practice session, keeps tutor policy
-and provider credentials on the server, saves final text turns, and produces a
-structured review with strengths, corrections, and next steps.
+Nia is a Flutter app backed by a Go API. A learner chooses a language, level,
+topic, and correction style; the tutor holds a spoken practice session; Nia
+saves the final text turns and generates strengths, corrections, and next
+steps. History is private to the learner and can be deleted from the app.
 
-The repository is designed to be useful in two ways:
+<p align="center">
+  <img src="docs/assets/product-session.png" alt="A Spanish practice session in Nia" width="49%">
+  <img src="docs/assets/product-feedback.png" alt="Nia's post-session feedback and corrections" width="49%">
+</p>
 
-- **Clone-and-run demo:** review the complete product flow without Firebase,
-  OpenAI credentials, or a cloud account.
-- **Production-shaped reference:** replace deterministic adapters with Firebase
-  Authentication, Firestore, OpenAI Realtime/Responses, and a least-privilege
-  Cloud Run deployment.
+<p align="center"><sub>A real local demo run: active practice on the left, post-session feedback on the right.</sub></p>
 
-No public production service is claimed here. Demo responses are clearly marked
-and production configuration fails closed when its required security settings
-are missing.
+## Run the demo
 
-## What this showcases
-
-- Direct mobile/web-to-OpenAI WebRTC audio using a short-lived client secret;
-  the standard provider key never ships in the app.
-- A small, idiomatic Go control plane with typed configuration, narrow provider
-  interfaces, graceful shutdown, structured logs, request correlation, bounded
-  provider calls, and ownership-first HTTP handlers.
-- Idempotent transcript writes, cursor pagination, structured post-session
-  feedback, conversation deletion, and no raw-audio persistence.
-- Firebase ID-token and App Check verification in production, with a fixed demo
-  identity accepted only by explicit local configuration.
-- Contract-first HTTP behavior in a linted OpenAPI 3.1 description.
-- A non-root multi-stage API image, Cloud Run probes and autoscaling limits,
-  server-only Firestore access, and a Secret Manager integration that keeps
-  secret material out of Terraform state.
-- CI gates for formatting, analysis, race-enabled Go tests, Flutter tests and web
-  build, `govulncheck`, CodeQL, Terraform validation, OpenAPI linting, and Trivy
-  repository/image scans.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    App["Flutter app"] -->|"ID token + App Check"| API["Go API · Cloud Run"]
-    API --> Auth["Firebase Auth"]
-    API --> DB["Firestore"]
-    API -->|"mint ephemeral secret"| RT["OpenAI Realtime"]
-    App <-->|"WebRTC audio + events"| RT
-    API -->|"post-session review"| Responses["OpenAI Responses"]
-```
-
-The API is a control plane, not a media relay. Audio takes the shortest
-supported path while identity, tutor instructions, limits, transcript storage,
-feedback, and deletion stay behind the server authorization boundary.
-
-[Read the architecture and request flows →](docs/architecture.md)
-
-## Try it without credentials
-
-Prerequisites are a current stable Flutter SDK and a Go toolchain compatible
-with `apps/api/go.mod`.
+The default demo needs Flutter and Go, but no Firebase project, OpenAI key, or
+cloud account.
 
 ```bash
 git clone https://github.com/bielcarpi/nia.git
@@ -80,112 +39,126 @@ cd nia
 make bootstrap
 ```
 
-Run the API in one terminal:
+Start the API:
 
 ```bash
 make dev-api
 ```
 
-Run the Flutter web demo in another:
+Then start the Flutter web app in a second terminal:
 
 ```bash
 make dev-mobile
 ```
 
-The API demo accepts `Authorization: Bearer nia-local-demo` only while its
-explicit local/demo adapters are active. The Flutter demo uses deterministic
-realtime events so a reviewer can exercise the UI without an OpenAI key.
+The app opens at `http://localhost:3000`. Its practice exchange is scripted,
+while preferences, transcript turns, feedback, history, and deletion go through
+the local Go API. [`docs/demo.md`](docs/demo.md) includes a short product tour
+and a complete `curl` walkthrough.
 
-For a five-minute API and product walkthrough, use
-[`docs/demo.md`](docs/demo.md). For emulator and production-adapter setup, see
-[`docs/development.md`](docs/development.md).
+## How it works
 
-## Repository map
+```mermaid
+flowchart LR
+    App["Flutter app"] -->|"ID token + App Check"| API["Go API · Cloud Run"]
+    API --> Auth["Firebase Auth"]
+    API --> DB["Firestore"]
+    API -->|"mint short-lived secret"| RT["OpenAI Realtime"]
+    App <-->|"WebRTC audio + events"| RT
+    API -->|"post-session review"| Responses["OpenAI Responses"]
+```
+
+The Go API is a control plane rather than an audio relay. In production it
+verifies Firebase identity and App Check, supplies the initial tutor settings,
+creates a short-lived Realtime client secret, persists final text turns, and
+requests the post-session review. Audio travels directly between the app and
+OpenAI over WebRTC and is not stored by Nia. Those initial Realtime settings are
+not an immutable policy boundary: a modified client holding a valid short-lived
+secret can update the provider session. The trade-off is covered in
+[`ADR-0002`](docs/adr/0002-direct-webrtc.md).
+
+Three implementation choices carry most of the design:
+
+- **One product, one repository.** Client, API, contract, tests, and deployment
+  configuration change together.
+- **Explicit runtime modes.** Demo adapters are deterministic and credential
+  free; production adapters require Firebase, Firestore, and OpenAI settings.
+- **A small Go boundary.** Authentication, storage, session issuance, and
+  feedback are narrow interfaces, while HTTP ownership and error behavior stay
+  in one service.
+
+The request flows and trade-offs are in
+[`docs/architecture.md`](docs/architecture.md).
+
+## API and repository
+
+The API covers preferences, realtime session creation, idempotent transcript
+writes, feedback completion, cursor-paginated history, detail, and deletion.
+[`contracts/openapi.yaml`](contracts/openapi.yaml) contains the OpenAPI 3.1
+contract and concrete request/response examples.
 
 ```text
 apps/
-  api/                  Go control-plane API and production adapters
+  api/                  Go API and Firebase/OpenAI adapters
   mobile/               Flutter app for iOS, Android, and Web
 contracts/
   openapi.yaml          Public HTTP contract
 docs/
-  adr/                   Architecture decision records
-  architecture.md       Boundaries, flows, data, and scaling model
-  development.md        Local demo and cloud-adapter development
-  deployment.md         Two-stage Google Cloud deployment
-  operations.md         Probes, SLO candidates, alerts, and runbooks
+  adr/                   Decisions and alternatives considered
+  architecture.md       Boundaries and request flows
+  demo.md               Five-minute product and API walkthrough
+  development.md        Local and emulator development
+  deployment.md         Google Cloud deployment and rollback
+  operations.md         First-deploy signals and diagnostics
   security.md           Threat model and production checklist
 infra/
-  firebase/             Deny-by-default client rules and emulator config
-  terraform/bootstrap/  APIs, image registry, runtime identity, secret shell
-  terraform/service/    Cloud Run service, probes, limits, secret injection
+  firebase/             Firestore client rules and emulator config
+  terraform/            Bootstrap and Cloud Run service stacks
 ```
 
-## API surface
-
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /healthz` / `GET /readyz` | Liveness and dependency readiness |
-| `GET/PATCH /api/v1/me/preferences` | Learner defaults |
-| `POST /api/v1/realtime/sessions` | Owned conversation + ephemeral WebRTC bootstrap |
-| `PUT /api/v1/conversations/{id}/turns/{turn_id}` | Idempotent final text turn |
-| `POST /api/v1/conversations/{id}/complete` | Complete and generate structured feedback |
-| `GET /api/v1/conversations` | Cursor-paginated history |
-| `GET/DELETE /api/v1/conversations/{id}` | Detail and permanent deletion |
-
-[`contracts/openapi.yaml`](contracts/openapi.yaml) is the reviewable source of
-truth for payloads, errors, limits, and authentication.
-
-## Quality gates
+Common checks:
 
 ```bash
-make format          # apply Go and Dart formatters
-make check           # contract, infra, Go, Flutter, race, and vulnerability checks
-make openapi-lint    # lint only the HTTP contract
-make terraform-check # format and validate both Terraform stacks
+make format
+make check
+make openapi-lint
+make terraform-check
 ```
 
-GitHub Actions are pinned to immutable commit SHAs. Dependabot tracks Go, Dart,
-Docker, Terraform, and Actions dependencies. CI builds the API runtime image and
-fails on known high/critical fixed vulnerabilities.
+CI runs Go formatting, vet, Staticcheck, race-enabled tests, `govulncheck`,
+Flutter analysis/tests/web build, OpenAPI linting, Terraform validation, CodeQL,
+and repository and container scans. Third-party Actions are pinned to commit
+SHAs and tracked by Dependabot.
 
-## Deploying
+## Deploy
 
-The deployment is intentionally two-stage:
+Terraform is split by lifecycle:
 
-1. Terraform bootstrap enables required APIs, creates Artifact Registry, a
-   dedicated runtime identity, and an empty Secret Manager secret container.
-2. An operator adds the key as a secret version, builds an immutable image, and
-   applies the Cloud Run service stack.
+1. `infra/terraform/bootstrap` enables APIs and creates Artifact Registry, the
+   runtime service account, Firestore IAM, and an empty Secret Manager secret.
+2. `infra/terraform/service` deploys a digest-pinned Cloud Run revision with
+   probes, scaling limits, explicit secret versioning, and two starter alerts.
 
-Terraform never receives the secret value. The detailed guide includes remote
-state, IAM prerequisites, Firebase configuration, smoke tests, traffic rollout,
-and rollback: [`docs/deployment.md`](docs/deployment.md).
+Secret values never pass through Terraform. The manual release path, Firebase
+setup, smoke test, rollback, and key rotation are documented in
+[`docs/deployment.md`](docs/deployment.md).
 
-## Project status and scope
-
-This is a portfolio-quality reference implementation, not a claim of a
-production-operated consumer service. Before public traffic, an operator still
-needs to configure a real Firebase project, provider billing and budgets,
-privacy/retention policy, App Check enforcement, alerting, custom domains, and
-independent security review. Those gates are explicit in
-[`docs/security.md`](docs/security.md).
-
-The separate historical backend should be redirected and archived only after
-credential rotation, consumer migration, and a final smoke test. The safe
-sequence is documented in [`docs/legacy-backend-migration.md`](docs/legacy-backend-migration.md).
+The repository runs end to end in local demo mode. Production adapters and
+infrastructure are implemented, but this README does not link to a hosted Nia
+deployment. A real launch still needs project-specific Firebase configuration,
+notification channels, budgets, privacy and retention decisions, and a verified
+mobile release.
 
 ## Credits
 
-Nia preserves the original repository history and recognizes the people who
-built it, including [Biel Carpi](https://github.com/bielcarpi),
-[Alex Cano Gallego](https://github.com/AlexCanoGallego), and
-[Marc Geremias](https://github.com/marcgeremias). See the live
-[contributors graph](https://github.com/bielcarpi/nia/graphs/contributors) for
-the complete record. The backend rewrite does not erase that provenance.
+Nia keeps the original repository history and credits
+[Biel Carpi](https://github.com/bielcarpi),
+[Alex Cano Gallego](https://github.com/AlexCanoGallego),
+[Marc Geremias](https://github.com/marcgeremias), and everyone in the
+[contributors graph](https://github.com/bielcarpi/nia/graphs/contributors).
 
 ## License
 
 No open-source license is currently included. Rights across the historical
-contributors must be confirmed before selecting one; until then, source
-visibility does not grant permission to copy, modify, or redistribute the code.
+contributors must be confirmed before selecting one; source visibility alone
+does not grant permission to copy, modify, or redistribute the code.

@@ -1,30 +1,40 @@
-# ADR 0001: One product monorepo
+# ADR 0001: Keep the product in one repository
 
 - Status: accepted
 - Date: 2026-07-16
 
-## Context
+## Problem
 
-The mobile client and backend previously lived in separate repositories even
-though they form one product, share one API contract, and must evolve together.
-That split made the public story harder to evaluate and allowed documentation
-and integration assumptions to drift.
+The Flutter client and backend were separate repositories, but a session change
+usually crosses both: the HTTP contract, server behavior, client parsing, and
+deployment configuration must agree. Reviewing half of that change at a time
+made drift easy and made the working product harder to evaluate.
+
+## Options considered
+
+1. **Keep the repositories split.** Each repository stays smaller, but contract
+   changes require coordinated branches and two CI results.
+2. **Import the historical backend Git history into the Flutter repository.**
+   This preserves every commit in one graph, but makes the monorepo migration
+   depend on a complete credential and history audit.
+3. **Keep the Flutter history and add the rebuilt API as a new application.**
+   This puts the current product in one review surface without importing
+   potentially sensitive backend history.
 
 ## Decision
 
-Keep the Flutter app in `apps/mobile`, the Go API in `apps/api`, the API contract
-in `contracts`, and deployment configuration in `infra`. Run both application
-checks from one CI workflow.
+Use option 3. The client lives in `apps/mobile`, the API in `apps/api`, the
+contract in `contracts`, and deployment code in `infra`. One CI workflow checks
+both applications and the shared contract.
 
-The historical backend repository is not merged into this Git history. Its
-contributors remain credited, while the new API starts from a clean,
-security-reviewed implementation.
+The historical backend remains separate during migration. Its contributors are
+credited, and its retirement has explicit gates in
+[`legacy-backend-migration.md`](../legacy-backend-migration.md).
 
-## Consequences
+## Cost of the choice
 
-- A single pull request can change contract, server, client, tests, and docs
-  atomically.
-- GitHub presents one coherent product and one quality signal.
-- CI needs path-aware caches and jobs for two language ecosystems.
-- Repository permissions apply to both applications; CODEOWNERS or finer
-  review rules can be introduced if the team grows.
+- A pull request can update a feature end to end.
+- Go and Flutter now share repository permissions and release coordination.
+- CI downloads two language toolchains even when a change touches only one.
+- If the team or build volume grows, path-filtered jobs or separate ownership
+  rules may become useful; they are not needed for the current team.

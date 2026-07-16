@@ -1,8 +1,7 @@
 # Five-minute demo
 
-The demo is intentionally credential-free. It proves application behavior and
-boundaries with deterministic adapters; it does not claim that a live OpenAI or
-Firebase deployment is running.
+The demo runs the complete product flow without cloud credentials. Realtime
+events and feedback are scripted; product records still pass through the Go API.
 
 ## Start the stack
 
@@ -38,10 +37,10 @@ address.
    next steps.
 6. Open history, revisit the detail, and delete it.
 
-That flow exercises the same domain and HTTP boundaries production adapters use.
-It does not exercise WebRTC networking, Firebase token validation, provider
-latency, billing, or Firestore durability; those require the integration setup
-in [`development.md`](development.md).
+That flow exercises the same domain and HTTP boundaries used by the production
+adapters. WebRTC networking, Firebase token validation, provider latency,
+billing, and Firestore durability require the integration setup in
+[`development.md`](development.md).
 
 ## API walkthrough
 

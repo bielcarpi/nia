@@ -1,24 +1,23 @@
 # Deploy to Google Cloud
 
-This guide deploys the Go API to Cloud Run and uses Firebase Authentication,
-Firestore, Artifact Registry, and Secret Manager. It is deliberately manual at
-the release boundary: this repository has no live project identifiers or
-GitHub-to-Google trust configuration, so a checked-in workflow cannot safely
-claim to deploy production.
+This guide deploys the Go API to Cloud Run with Firebase Authentication,
+Firestore, Artifact Registry, and Secret Manager. Releases are manual because
+the repository does not contain a Google Cloud project or GitHub-to-Google trust
+configuration.
 
 The Terraform is split into `bootstrap` and `service` states. Bootstrap creates
 long-lived project resources; service deploys replaceable Cloud Run revisions.
 
 ## Prerequisites
 
-- a Google Cloud project with billing enabled;
-- a Firebase project (usually the same project) with Authentication configured;
+- a Google Cloud project with billing enabled, registered as a Firebase project,
+  and Authentication configured;
 - `gcloud`, Docker with BuildKit, Firebase CLI, and Terraform;
 - permission to enable APIs, administer the listed resources and IAM bindings,
   push to Artifact Registry, and deploy Cloud Run; and
 - a standard OpenAI server API key with appropriate project limits.
 
-Choose immutable deployment values:
+Choose the deployment project and region:
 
 ```bash
 export PROJECT_ID="replace-with-gcp-project-id"
@@ -156,7 +155,7 @@ cp infra/terraform/service/terraform.tfvars.example \
   infra/terraform/service/terraform.tfvars
 ```
 
-Set the project IDs, immutable image reference, bootstrap service-account email,
+Set the project ID, immutable image reference, bootstrap service-account email,
 secret ID, numeric `openai_secret_version`, and exact HTTPS browser origins. The
 validation rejects every image tag, wildcard origins, and HTTP production
 origins. If notification channels already exist, add their full resource names
@@ -185,7 +184,7 @@ The stack also creates initial Cloud Monitoring policies for a five-minute 5xx
 burst and sustained successful-request p95 latency. With no notification-channel
 IDs they still create console-visible incidents, but they do not page anyone.
 Tune the thresholds from measured traffic and connect reviewed channels before
-calling alerting production-ready.
+relying on the policies for paging.
 
 ## Artifact cleanup activation
 

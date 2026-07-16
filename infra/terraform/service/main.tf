@@ -4,7 +4,7 @@ locals {
     NIA_AUTH_MODE               = "firebase"
     NIA_STORE_MODE              = "firestore"
     NIA_PROVIDER_MODE           = "openai"
-    NIA_FIREBASE_PROJECT_ID     = var.firebase_project_id
+    NIA_FIREBASE_PROJECT_ID     = var.project_id
     NIA_REQUIRE_APP_CHECK       = "true"
     NIA_ALLOWED_ORIGINS         = join(",", sort(tolist(var.allowed_origins)))
     NIA_OPENAI_BASE_URL         = "https://api.openai.com/v1"
@@ -20,6 +20,7 @@ locals {
     NIA_MAX_CONCURRENT_REQUESTS = "64"
     NIA_SESSION_LIMIT_PER_HOUR  = "12"
     NIA_FEEDBACK_LIMIT_PER_HOUR = "12"
+    NIA_TURN_LIMIT_PER_MINUTE   = "120"
     NIA_LOG_LEVEL               = "info"
   }
 }

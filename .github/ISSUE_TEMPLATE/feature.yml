@@ -1,5 +1,5 @@
 name: Feature proposal
-description: Propose a scoped user or operator improvement
+description: Propose an improvement to Nia
 title: "feat: "
 labels: [enhancement, needs-triage]
 body:
@@ -26,4 +26,4 @@ body:
     id: alternatives
     attributes:
       label: Smaller alternatives considered
-      description: Can this fit the existing Flutter + Go + Firebase + OpenAI boundary?
+      description: Could this fit the existing app and API without another service?

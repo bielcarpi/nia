@@ -24,7 +24,7 @@ shape is captured in [`infra/terraform`](../../infra/terraform).
 
 - Kubernetes would introduce a cluster and scheduler for one HTTP container.
 - Separate session, transcript, and feedback services would add network and
-  deployment boundaries without independent scaling evidence.
+  deployment boundaries before any of them needs to scale independently.
 - Direct client access to Firestore would duplicate authorization rules outside
   the Go API and expose product query shapes to every client release.
 
@@ -35,5 +35,4 @@ shape is captured in [`infra/terraform`](../../infra/terraform).
 - Firestore indexes follow actual query shapes and remain deployment artifacts.
 - Old and new Cloud Run revisions share data, so schema changes must remain
   backward compatible through the rollback window.
-- A future asynchronous workload may justify a queue or worker, but no such
-  deployment unit exists until that workload appears.
+- Add a queue or worker if asynchronous jobs become part of the product.

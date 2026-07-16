@@ -10,9 +10,8 @@ type windowEntry struct {
 	count   int
 }
 
-// WindowLimiter is an intentionally instance-local guardrail. Cloud Run's
-// max-instance setting and the OpenAI project budget remain the distributed
-// backstops; a distributed limiter can replace this interface if usage demands it.
+// WindowLimiter applies per-process limits. Cross-instance enforcement belongs
+// in a shared store or provider quota.
 type WindowLimiter struct {
 	mu        sync.Mutex
 	limit     int

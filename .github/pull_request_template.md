@@ -10,9 +10,9 @@
 
 <!-- List the commands and manual flows you actually ran. -->
 
-## Product evidence
+## Screenshots
 
-<!-- For UI changes, attach a screenshot or recording from a real build. -->
+<!-- For UI changes, attach a screenshot or recording. -->
 
 - [ ] API behavior is reflected in `contracts/openapi.yaml` when needed
 - [ ] No credential, private learner data, or raw audio is included

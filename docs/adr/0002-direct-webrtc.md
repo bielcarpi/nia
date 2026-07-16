@@ -40,7 +40,7 @@ the Go [`openai/client.go`](../../apps/api/internal/provider/openai/client.go),
 and the session response in the
 [`OpenAPI contract`](../../contracts/openapi.yaml).
 
-## What remains imperfect
+## Consequences
 
 - Usage can be limited when a session is issued, but precise cost accounting
   still needs provider-side reconciliation.
@@ -48,9 +48,6 @@ and the session response in the
   behavior across three platforms.
 - A short-lived secret is still sensitive while valid and must not be logged or
   persisted.
-- Initial tutor configuration is product behavior, not an authorization
-  boundary, while the client owns the direct session.
-
-Revisit the relay choice only if product requirements need server-side media
-processing, recording with explicit consent, or transport controls the direct
-provider connection cannot supply.
+- Revisit the relay choice if product requirements need server-side media
+  processing, recording with explicit consent, or transport controls the direct
+  provider connection cannot supply.

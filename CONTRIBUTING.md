@@ -1,13 +1,8 @@
 # Contributing
 
-Thanks for helping improve Nia. Small, reviewable changes with tests and an
-explicit user outcome are easiest to evaluate.
-
-> **Licensing note:** this repository does not currently declare an open-source
-> license because rights across the historical contributors still need to be
-> confirmed. Opening a pull request does not grant the public broader reuse
-> rights. Maintainers should resolve contribution and project licensing terms
-> before accepting external code.
+Thanks for contributing. Please keep changes focused and include tests where
+they add value. By submitting a contribution, you agree that it may be
+distributed under the [BSD 3-Clause License](LICENSE).
 
 ## Development workflow
 
@@ -44,14 +39,9 @@ critical known vulnerabilities.
 
 ## Architecture guardrails
 
-Keep the system proportional to its workload. The current boundary is one
-Flutter client, one stateless Go API, Firebase Authentication, Firestore, and
-OpenAI. New services or infrastructure should be justified by an independently
-scaling workload, a security boundary, or measured reliability needs.
-
-Read [`docs/architecture.md`](docs/architecture.md) and add an ADR for decisions
-that change a major trust boundary, data path, deployment unit, or durable data
-model.
+Nia currently uses one Flutter client and one Go API. Before adding another
+service, explain the workload or ownership boundary that requires it. Add an ADR
+for changes to deployment units, data flow, or persistence.
 
 ## Pull requests
 

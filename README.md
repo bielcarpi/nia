@@ -11,6 +11,7 @@
 <p align="center">
   <a href="https://github.com/bielcarpi/nia/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/bielcarpi/nia/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/bielcarpi/nia/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/bielcarpi/nia/actions/workflows/codeql.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="BSD 3-Clause License" src="https://img.shields.io/badge/license-BSD%203--Clause-blue.svg"></a>
   <img alt="Flutter" src="https://img.shields.io/badge/client-Flutter-02569B?logo=flutter&logoColor=white">
   <img alt="Go" src="https://img.shields.io/badge/API-Go-00ADD8?logo=go&logoColor=white">
   <img alt="Cloud Run" src="https://img.shields.io/badge/runtime-Cloud%20Run-4285F4?logo=googlecloud&logoColor=white">
@@ -26,7 +27,7 @@ steps. History is private to the learner and can be deleted from the app.
   <img src="docs/assets/product-feedback.png" alt="Nia's post-session feedback and corrections" width="49%">
 </p>
 
-<p align="center"><sub>A real local demo run: active practice on the left, post-session feedback on the right.</sub></p>
+<p align="center"><sub>Spanish practice session (left) and post-session review (right).</sub></p>
 
 ## Run the demo
 
@@ -68,27 +69,22 @@ flowchart LR
     API -->|"post-session review"| Responses["OpenAI Responses"]
 ```
 
-The Go API is a control plane rather than an audio relay. In production it
-verifies Firebase identity and App Check, supplies the initial tutor settings,
-creates a short-lived Realtime client secret, persists final text turns, and
-requests the post-session review. Audio travels directly between the app and
-OpenAI over WebRTC and is not stored by Nia. Those initial Realtime settings are
-not an immutable policy boundary: a modified client holding a valid short-lived
-secret can update the provider session. The trade-off is covered in
-[`ADR-0002`](docs/adr/0002-direct-webrtc.md).
+The Go API handles authentication, session setup, transcript storage, and
+feedback. Audio travels directly between the app and OpenAI over WebRTC and is
+never stored by Nia. See [`ADR-0002`](docs/adr/0002-direct-webrtc.md) for the
+WebRTC decision.
 
-Three implementation choices carry most of the design:
+Key decisions:
 
-- **One product, one repository.** Client, API, contract, tests, and deployment
-  configuration change together.
-- **Explicit runtime modes.** Demo adapters are deterministic and credential
-  free; production adapters require Firebase, Firestore, and OpenAI settings.
-- **A small Go boundary.** Authentication, storage, session issuance, and
-  feedback are narrow interfaces, while HTTP ownership and error behavior stay
-  in one service.
+- **Monorepo.** Client, API, contract, tests, and deployment configuration
+  change together.
+- **Separate demo and production configuration.** The demo is deterministic
+  and credential-free; production requires Firebase, Firestore, and OpenAI.
+- **Single Go API.** Authentication, storage, session issuance, feedback, and
+  HTTP behavior stay in one service.
 
-The request flows and trade-offs are in
-[`docs/architecture.md`](docs/architecture.md).
+See [`docs/architecture.md`](docs/architecture.md) for the request flows and
+component boundaries.
 
 ## API and repository
 
@@ -143,22 +139,15 @@ Secret values never pass through Terraform. The manual release path, Firebase
 setup, smoke test, rollback, and key rotation are documented in
 [`docs/deployment.md`](docs/deployment.md).
 
-The repository runs end to end in local demo mode. Production adapters and
-infrastructure are implemented, but this README does not link to a hosted Nia
-deployment. A real launch still needs project-specific Firebase configuration,
-notification channels, budgets, privacy and retention decisions, and a verified
-mobile release.
+There is no hosted demo yet. Run Nia locally with the steps above, or follow
+[`docs/deployment.md`](docs/deployment.md) to deploy your own instance.
 
 ## Credits
 
-Nia keeps the original repository history and credits
-[Biel Carpi](https://github.com/bielcarpi),
-[Alex Cano Gallego](https://github.com/AlexCanoGallego),
-[Marc Geremias](https://github.com/marcgeremias), and everyone in the
-[contributors graph](https://github.com/bielcarpi/nia/graphs/contributors).
+Nia was started by [Biel Carpi](https://github.com/bielcarpi), with early
+contributions from [Alex Cano Gallego](https://github.com/AlexCanoGallego),
+[Marc Geremias](https://github.com/marcgeremias), and Guillem.
 
 ## License
 
-No open-source license is currently included. Rights across the historical
-contributors must be confirmed before selecting one; source visibility alone
-does not grant permission to copy, modify, or redistribute the code.
+Nia is licensed under the [BSD 3-Clause License](LICENSE).

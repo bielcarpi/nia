@@ -245,10 +245,9 @@ window because the previous Cloud Run revision references it explicitly; then
 disable it and document that older revisions can no longer serve provider calls.
 Destroy a version only after retention and incident-response requirements permit.
 
-## Future CI/CD
+## Automated deployments
 
-When a real project and release policy exist, add a protected GitHub environment
-and Google Workload Identity Federation. Grant the deploy principal only the
-roles required to push the image, impersonate the runtime identity during
-deployment, and update this service. Do not store a long-lived service-account
-JSON key in GitHub Secrets.
+Use a protected GitHub environment and Google Workload Identity Federation.
+Grant the deploy principal only the roles required to push the image,
+impersonate the runtime identity during deployment, and update this service. Do
+not store a long-lived service-account JSON key in GitHub Secrets.

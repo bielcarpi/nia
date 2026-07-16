@@ -3,6 +3,9 @@ info:
   title: Nia API
   version: 2.0.0
   summary: Control-plane API for Nia's realtime language tutor
+  license:
+    name: BSD 3-Clause License
+    identifier: BSD-3-Clause
   description: |
     Nia's API authenticates learners, supplies initial tutor settings, issues
     short-lived OpenAI Realtime client secrets, stores text turns, and creates

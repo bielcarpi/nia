@@ -21,16 +21,13 @@ Include, when possible:
 - whether any credential or personal data may have been exposed; and
 - a safe way to contact you for follow-up.
 
-The maintainers will acknowledge a complete report as availability permits,
-investigate privately, and coordinate disclosure after a fix. This is not a
-bug-bounty program and no payment is promised.
+We will acknowledge reports as soon as we can, investigate privately, and
+coordinate disclosure after a fix. We do not currently offer a bug bounty.
 
 ## Credential exposure
 
-If a live credential appears in the repository, logs, build output, or an
-artifact, revoke or rotate it first. Removing the string from the current branch
-does not invalidate it and does not remove it from Git history. After rotation,
-preserve enough non-secret evidence to investigate the exposure safely.
+If you find an exposed credential, rotate it immediately. Removing it from the
+latest commit does not revoke it or erase it from Git history.
 
 ## Security boundaries
 

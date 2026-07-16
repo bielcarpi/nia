@@ -29,11 +29,9 @@ The service Terraform defines two Cloud Run metric alerts:
 - an absolute five-minute `5xx` burst, initially greater than five responses;
 - successful-request p95 latency above 10 seconds for five minutes.
 
-These defaults are coarse first-deploy tripwires, not SLOs. The first catches an
-obvious repeated failure on a low-traffic service. The second catches requests
-approaching the API's provider timeout. Change them through
-`server_error_alert_threshold_count` and `latency_alert_threshold_ms` after a
-traffic baseline exists.
+These are starting thresholds, not SLOs. Adjust
+`server_error_alert_threshold_count` and `latency_alert_threshold_ms` after
+observing real traffic.
 
 `notification_channel_ids` is empty by default. The policies can open incidents
 in Cloud Monitoring, but nobody is paged until an operator supplies existing
@@ -60,7 +58,7 @@ actual release.
 
 Useful first SLIs are:
 
-| Signal | Evidence | Question to answer from the baseline |
+| Signal | Source | Question to answer from the baseline |
 | --- | --- | --- |
 | Eligible request success | Cloud Run request count; exclude expected client `4xx` | Which failures are user-impacting and under Nia's control? |
 | API latency by operation | Access logs grouped by route template | Which endpoints need separate latency expectations? |
@@ -116,7 +114,7 @@ gcloud logging read \
   --format='table(timestamp,jsonPayload.operation,jsonPayload.provider_status,jsonPayload.provider_request_id,jsonPayload.duration_ms)'
 ```
 
-Use the evidence to make the next decision:
+Use these signals when troubleshooting:
 
 | Observation | Next action |
 | --- | --- |
@@ -124,7 +122,7 @@ Use the evidence to make the next decision:
 | Provider failures rise while transcript writes remain healthy | Keep stored conversations recoverable, inspect provider status/request IDs, and avoid unbounded completion retries. |
 | Readiness logs report a dependency failure | Check runtime Firestore IAM, Firestore service health, and the configured project and database before changing probes. |
 | Firestore returns permission or index errors | Reconcile runtime IAM or the checked-in index definition; never fall back to instance memory in production. |
-| A credential may have leaked | Rotate it first, preserve non-secret evidence, and follow [`SECURITY.md`](../SECURITY.md). |
+| A credential may have leaked | Rotate it immediately and follow [`SECURITY.md`](../SECURITY.md). |
 
 ## Rollout and data compatibility
 

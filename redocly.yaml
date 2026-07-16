@@ -6,7 +6,6 @@ extends:
   - recommended
 
 rules:
-  info-license: off
   no-server-example.com: off
   no-unused-components: error
   operation-4xx-response: off

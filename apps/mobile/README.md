@@ -115,9 +115,8 @@ flowchart LR
 7. Completing a conversation waits for pending transcript writes before asking
    the API for structured feedback.
 
-The automated suite exercises this lifecycle through a fake transport and HTTP
-server. A live provider session and physical-device media permissions remain
-release checks, not claims made by the unit tests.
+Unit tests use fake transports. Test live WebRTC and media permissions on real
+devices before release.
 
 ## API contract
 
@@ -146,8 +145,7 @@ lib/
 └── ui/           responsive screens and shared widgets
 ```
 
-Dependencies are constructed once and passed through narrow interfaces. There
-is no global service locator.
+Dependencies are constructed at startup and passed through interfaces.
 
 ## Verification
 
@@ -158,11 +156,8 @@ flutter test
 flutter build web --release --dart-define=NIA_DEMO_MODE=true
 ```
 
-Tests cover strict configuration and grant parsing, API auth and error handling,
-the demo lifecycle and transcript-derived feedback, WebRTC protocol events,
-microphone-denied typed chat, account validation and password reset, history
-pagination and disposal races, completion write barriers, and the narrow-screen
-practice journey.
+The suite covers configuration, API failures, realtime events, session
+completion, history, account flows, and responsive layouts.
 
 ## Security notes
 

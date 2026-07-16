@@ -7,29 +7,23 @@
 
 The Flutter client and backend were separate repositories, but a session change
 usually crosses both: the HTTP contract, server behavior, client parsing, and
-deployment configuration must agree. Reviewing half of that change at a time
-made drift easy and made the working product harder to evaluate.
+deployment configuration must agree. Coordinating the same change across two
+repositories made drift easy.
 
 ## Options considered
 
 1. **Keep the repositories split.** Each repository stays smaller, but contract
    changes require coordinated branches and two CI results.
-2. **Import the historical backend Git history into the Flutter repository.**
-   This preserves every commit in one graph, but makes the monorepo migration
-   depend on a complete credential and history audit.
-3. **Keep the Flutter history and add the rebuilt API as a new application.**
-   This puts the current product in one review surface without importing
-   potentially sensitive backend history.
+2. **Merge the backend repository history.** This preserves every commit in one
+   graph, but also carries over files and decisions that the new API replaces.
+3. **Add the rebuilt API as a new application.** This keeps the client history
+   and starts the new API with a clean structure.
 
 ## Decision
 
 Use option 3. The client lives in `apps/mobile`, the API in `apps/api`, the
 contract in `contracts`, and deployment code in `infra`. One CI workflow checks
 both applications and the shared contract.
-
-The historical backend remains separate during migration. Its contributors are
-credited, and its retirement has explicit gates in
-[`legacy-backend-migration.md`](../legacy-backend-migration.md).
 
 ## Cost of the choice
 

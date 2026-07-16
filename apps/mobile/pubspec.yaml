@@ -1,5 +1,5 @@
 name: nia_flutter
-description: A realtime AI language tutor with a safe, credential-free demo.
+description: A realtime AI language tutor with a credential-free local demo.
 publish_to: none
 
 version: 2.0.0+2

@@ -27,12 +27,10 @@ address.
 
 ## Product walkthrough
 
-1. Show that the app is visibly in Demo mode; no real identity or provider call
-   should be ambiguous.
+1. Confirm that the **Demo** badge is visible.
 2. Choose a target language, level, practice topic, and correction style.
-3. Start a conversation and follow the scripted realtime exchange.
-4. Point out that the interaction UI receives incremental events while only
-   final text turns become durable application records.
+3. Start a conversation and send a few text or simulated voice turns.
+4. Watch the scripted responses stream into the conversation.
 5. End the session and review the deterministic strengths, corrections, and
    next steps.
 6. Open history, revisit the detail, and delete it.
@@ -119,13 +117,12 @@ curl --fail-with-body \
   "http://localhost:8080/api/v1/conversations/${CONVERSATION_ID}"
 ```
 
-## What to inspect in the code
+## Code map
 
 - `apps/api/internal`: domain boundaries, adapters, middleware, and tests;
 - `apps/mobile/lib`: injected demo/production services and UI state;
-- `contracts/openapi.yaml`: exact public behavior and typed failures;
-- `infra/terraform`: least-privilege bootstrap and Cloud Run runtime; and
-- `.github/workflows`: reproducible quality and security checks.
+- `contracts/openapi.yaml`: public API behavior and errors;
+- `infra/terraform`: Google Cloud bootstrap and Cloud Run configuration; and
+- `.github/workflows`: quality and security checks.
 
-Finish with `make check`. A green local run is useful evidence; repository badges
-reflect GitHub's own run state only after the changes land on GitHub.
+Run `make check` before committing.

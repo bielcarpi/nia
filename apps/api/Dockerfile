@@ -18,7 +18,7 @@ FROM gcr.io/distroless/static-debian12:nonroot@sha256:aef9602f8710ec12bde19d593f
 
 ARG VERSION=dev
 LABEL org.opencontainers.image.title="Nia API" \
-      org.opencontainers.image.description="Secure control plane for Nia language practice" \
+      org.opencontainers.image.description="Go API for Nia language practice" \
       org.opencontainers.image.source="https://github.com/bielcarpi/nia" \
       org.opencontainers.image.revision="${VERSION}"
 

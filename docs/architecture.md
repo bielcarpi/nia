@@ -140,7 +140,7 @@ anonymization, because the records still belong to an identifiable account.
 
 | Mode | Authentication | Storage | AI provider | Purpose |
 | --- | --- | --- | --- | --- |
-| `demo` | Fixed local identity | In memory | Deterministic scripted adapter | Clone-and-run review, tests, UI work |
+| `demo` | Fixed local identity | In memory | Deterministic scripted adapter | Local development, tests, UI work |
 | `production` | Firebase ID-token verification | Firestore | OpenAI Realtime + Responses | Deployed service |
 
 Production configuration fails closed when required identity, storage, or
@@ -169,17 +169,6 @@ process and is never inferred from a missing credential.
 
 See [operations.md](operations.md) for the signals and diagnostics to verify on
 the first cloud deployment.
-
-## Why this is not a microservice system
-
-Nia is not split into microservices and does not use Kubernetes, Redis,
-GraphQL, or a workflow engine. The workload is a small control plane around a
-provider-managed realtime data path. Those systems would add operational
-surface before they add meaningful reliability.
-
-Split a component out only when it has an independently scaling workload, a new
-security boundary, or a release cadence the modular Go service can no longer
-support cleanly.
 
 ## Decisions
 

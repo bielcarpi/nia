@@ -18,9 +18,8 @@ deployment must supply. Demo authentication is local-only.
 4. OpenAI and Google Cloud are external processors. Send only the data required
    for the tutoring interaction and configure their retention and regional
    settings for the deployment's obligations.
-5. GitHub Actions is a build system, not a production secret store by default.
-   A future deploy workflow should use short-lived Workload Identity Federation
-   instead of a service-account key.
+5. Releases are currently manual. Any automated deployment must use short-lived
+   Workload Identity Federation instead of a service-account key.
 
 ## Threats and controls
 
@@ -60,16 +59,8 @@ conversation deletion endpoint that hides the record as soon as deletion starts
 and removes its transcript and feedback. A durable marker keeps partial cleanup
 private and retryable.
 
-A production operator must still define and publish:
-
-- a privacy notice and lawful basis appropriate to its users and regions;
-- Firestore, Cloud Logging, Firebase Authentication, and provider retention;
-- account-level export and deletion behavior;
-- age restrictions and parental-consent rules, if applicable; and
-- incident notification and processor agreements.
-
-These product and legal responsibilities are deployment work; the repository
-does not automate them.
+Before launch, publish a privacy policy and define data retention and deletion,
+age requirements, and incident response.
 
 ## HTTP and platform hardening
 

@@ -7,13 +7,11 @@ class AuthUser {
     required this.id,
     required this.email,
     required this.displayName,
-    required this.isDemo,
   });
 
   final String id;
   final String email;
   final String displayName;
-  final bool isDemo;
 }
 
 abstract interface class AuthService {
@@ -21,6 +19,8 @@ abstract interface class AuthService {
   Stream<AuthUser?> get authStateChanges;
 
   Future<void> signIn({required String email, required String password});
+  Future<void> createAccount({required String email, required String password});
+  Future<void> sendPasswordReset(String email);
   Future<void> signInToDemo();
   Future<String?> idToken();
   Future<void> signOut();
@@ -53,14 +53,27 @@ class DemoAuthService implements AuthService {
     _user = const AuthUser(
       id: 'demo-user',
       email: 'demo@nia.local',
-      displayName: 'Language learner',
-      isDemo: true,
+      displayName: 'Alex',
     );
     _controller.add(_user);
   }
 
   @override
   Future<String?> idToken() async => token;
+
+  @override
+  Future<void> createAccount({
+    required String email,
+    required String password,
+  }) =>
+      Future<void>.error(
+        StateError('Account creation is unavailable in demo mode.'),
+      );
+
+  @override
+  Future<void> sendPasswordReset(String email) => Future<void>.error(
+        StateError('Password reset is unavailable in demo mode.'),
+      );
 
   @override
   Future<void> signOut() async {
@@ -89,6 +102,21 @@ class FirebaseAuthService implements AuthService {
   }
 
   @override
+  Future<void> createAccount({
+    required String email,
+    required String password,
+  }) async {
+    await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  @override
+  Future<void> sendPasswordReset(String email) =>
+      _auth.sendPasswordResetEmail(email: email);
+
+  @override
   Future<void> signInToDemo() {
     throw StateError('Demo sign-in is disabled in production mode.');
   }
@@ -113,7 +141,6 @@ class FirebaseAuthService implements AuthService {
       email: user.email ?? '',
       displayName:
           user.displayName ?? user.email?.split('@').first ?? 'Learner',
-      isDemo: false,
     );
   }
 }

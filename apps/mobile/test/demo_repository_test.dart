@@ -4,7 +4,8 @@ import 'package:nia_flutter/domain/models.dart';
 
 void main() {
   test('demo repository supports the full conversation lifecycle', () async {
-    final repository = DemoRepository();
+    final now = DateTime.utc(2026, 7, 16, 12);
+    final repository = DemoRepository(now: () => now);
     const preferences = TutorPreferences.defaults();
 
     final grant = await repository.createSession(preferences);
@@ -14,7 +15,7 @@ void main() {
     final turn = ConversationTurn(
       id: 'turn-1',
       role: TurnRole.user,
-      text: 'Hola',
+      text: 'Yo soy bien.',
       occurredAt: DateTime.utc(2026, 7, 15),
     );
     await repository.saveTurn(grant.conversation.id, turn);
@@ -26,6 +27,8 @@ void main() {
     final completed = await repository.complete(grant.conversation.id);
     expect(completed.conversation.status, ConversationStatus.completed);
     expect(completed.feedback?.corrections, isNotEmpty);
+    expect(completed.feedback?.corrections.single.original, 'Yo soy bien.');
+    expect(completed.feedback?.generatedAt, now);
 
     await repository.delete(grant.conversation.id);
     expect(

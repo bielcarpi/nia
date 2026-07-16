@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'package:nia_flutter/core/api/api_client.dart';
+import 'package:nia_flutter/domain/demo_tutor.dart';
 import 'package:nia_flutter/domain/models.dart';
 
 abstract interface class PreferencesRepository {
@@ -25,7 +26,7 @@ class ApiPreferencesRepository implements PreferencesRepository {
   Future<TutorPreferences> load() async {
     final json = asJsonMap(await _api.get('/api/v1/me/preferences'));
     if (json == null) throw _invalidResponse();
-    return TutorPreferences.fromJson(asJsonMap(json['preferences']) ?? json);
+    return _parse(() => TutorPreferences.fromJson(json));
   }
 
   @override
@@ -34,13 +35,14 @@ class ApiPreferencesRepository implements PreferencesRepository {
       await _api.patch('/api/v1/me/preferences', body: preferences.toJson()),
     );
     if (json == null) throw _invalidResponse();
-    return TutorPreferences.fromJson(asJsonMap(json['preferences']) ?? json);
+    return _parse(() => TutorPreferences.fromJson(json));
   }
 }
 
 class ApiConversationRepository implements ConversationRepository {
-  const ApiConversationRepository(this._api);
+  const ApiConversationRepository(this._api, {this.allowDemoTransport = false});
   final ApiClient _api;
+  final bool allowDemoTransport;
 
   @override
   Future<RealtimeGrant> createSession(TutorPreferences preferences) async {
@@ -51,7 +53,14 @@ class ApiConversationRepository implements ConversationRepository {
       ),
     );
     if (json == null) throw _invalidResponse();
-    return RealtimeGrant.fromJson(json);
+    final grant = _parse(() => RealtimeGrant.fromJson(json));
+    if (!allowDemoTransport && grant.transport != 'webrtc') {
+      throw const ApiException(
+        code: 'invalid_realtime_transport',
+        message: 'Production requires a WebRTC session from the API.',
+      );
+    }
+    return grant;
   }
 
   @override
@@ -66,12 +75,16 @@ class ApiConversationRepository implements ConversationRepository {
     final rawItems = json['items'];
     if (rawItems is! List<Object?>) throw _invalidResponse();
     return ConversationPage(
-      items: rawItems
-          .map(asJsonMap)
-          .whereType<Map<String, Object?>>()
-          .map(ConversationSummary.fromJson)
-          .toList(growable: false),
-      nextCursor: json['next_cursor'] as String?,
+      items: _parse(
+        () => rawItems.map((item) {
+          final map = asJsonMap(item);
+          if (map == null) {
+            throw const FormatException('Conversation item must be an object.');
+          }
+          return ConversationSummary.fromJson(map);
+        }).toList(growable: false),
+      ),
+      nextCursor: _optionalCursor(json['next_cursor']),
     );
   }
 
@@ -81,7 +94,7 @@ class ApiConversationRepository implements ConversationRepository {
       await _api.get('/api/v1/conversations/${Uri.encodeComponent(id)}'),
     );
     if (json == null) throw _invalidResponse();
-    return ConversationDetail.fromJson(json);
+    return _parse(() => ConversationDetail.fromJson(json));
   }
 
   @override
@@ -102,7 +115,7 @@ class ApiConversationRepository implements ConversationRepository {
       ),
     );
     if (json == null) throw _invalidResponse();
-    return ConversationDetail.fromJson(json);
+    return _parse(() => ConversationDetail.fromJson(json));
   }
 
   @override
@@ -116,8 +129,26 @@ ApiException _invalidResponse() => const ApiException(
       message: 'Nia received an unexpected server response.',
     );
 
+T _parse<T>(T Function() parse) {
+  try {
+    return parse();
+  } on FormatException {
+    throw _invalidResponse();
+  } on TypeError {
+    throw _invalidResponse();
+  }
+}
+
+String? _optionalCursor(Object? value) {
+  if (value == null) return null;
+  if (value is String && value.isNotEmpty) return value;
+  throw _invalidResponse();
+}
+
 class DemoRepository implements PreferencesRepository, ConversationRepository {
-  DemoRepository() {
+  DemoRepository({DateTime Function()? now})
+      : _now = now ?? (() => DateTime.now().toUtc()) {
+    final seededAt = _now().subtract(const Duration(days: 1));
     final completed = ConversationSummary(
       id: 'demo-coffee',
       status: ConversationStatus.completed,
@@ -127,8 +158,8 @@ class DemoRepository implements PreferencesRepository, ConversationRepository {
         topic: 'Ordering at a café',
         correctionStyle: CorrectionStyle.gentle,
       ),
-      createdAt: DateTime.now().toUtc().subtract(const Duration(days: 1)),
-      completedAt: DateTime.now().toUtc().subtract(const Duration(days: 1)),
+      createdAt: seededAt,
+      completedAt: seededAt,
       turnCount: 4,
     );
     _conversations[completed.id] = ConversationDetail(
@@ -176,12 +207,13 @@ class DemoRepository implements PreferencesRepository, ConversationRepository {
           'Practise asking for the bill.',
           'Try the same exchange while paying by card.',
         ],
-        generatedAt: DateTime.utc(2026, 7, 15, 12),
+        generatedAt: seededAt.add(const Duration(minutes: 2)),
       ),
     );
   }
 
   TutorPreferences _preferences = const TutorPreferences.defaults();
+  final DateTime Function() _now;
   final Map<String, ConversationDetail> _conversations =
       <String, ConversationDetail>{};
   int _id = 1;
@@ -198,7 +230,7 @@ class DemoRepository implements PreferencesRepository, ConversationRepository {
   @override
   Future<RealtimeGrant> createSession(TutorPreferences preferences) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    final now = DateTime.now().toUtc();
+    final now = _now();
     final summary = ConversationSummary(
       id: 'demo-session-${_id++}',
       status: ConversationStatus.active,
@@ -224,7 +256,20 @@ class DemoRepository implements PreferencesRepository, ConversationRepository {
         .map((detail) => detail.conversation)
         .toList(growable: false)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return ConversationPage(items: UnmodifiableListView(items));
+    const pageSize = 20;
+    final offset = cursor == null ? 0 : int.tryParse(cursor);
+    if (offset == null || offset < 0 || offset > items.length) {
+      throw const ApiException(
+        code: 'invalid_cursor',
+        message: 'That history cursor is no longer valid.',
+        statusCode: 400,
+      );
+    }
+    final end = (offset + pageSize).clamp(0, items.length).toInt();
+    return ConversationPage(
+      items: UnmodifiableListView(items.sublist(offset, end)),
+      nextCursor: end < items.length ? '$end' : null,
+    );
   }
 
   @override
@@ -262,34 +307,28 @@ class DemoRepository implements PreferencesRepository, ConversationRepository {
   @override
   Future<ConversationDetail> complete(String conversationId) async {
     final detail = await get(conversationId);
+    if (!detail.turns.any((turn) => turn.role == TurnRole.user)) {
+      throw const ApiException(
+        code: 'learner_turn_required',
+        message: 'Add a learner turn before generating feedback.',
+        statusCode: 409,
+      );
+    }
+    final completedAt = _now();
     final completed = ConversationDetail(
       conversation: ConversationSummary(
         id: detail.conversation.id,
         status: ConversationStatus.completed,
         preferences: detail.conversation.preferences,
         createdAt: detail.conversation.createdAt,
-        completedAt: DateTime.now().toUtc(),
+        completedAt: completedAt,
         turnCount: detail.turns.length,
       ),
       turns: detail.turns,
-      feedback: SessionFeedback(
-        summary: 'You kept the exchange moving and communicated clearly.',
-        strengths: <String>[
-          'You responded with complete thoughts',
-          'Your vocabulary matched the selected topic',
-        ],
-        corrections: <FeedbackCorrection>[
-          FeedbackCorrection(
-            original: 'Me gustaría practicar una situación real.',
-            corrected: 'Quisiera practicar una situación real.',
-            explanation: '“Quisiera” is a polished alternative for requests.',
-          ),
-        ],
-        nextSteps: <String>[
-          'Repeat the topic at advanced level.',
-          'Aim for faster, complete responses.',
-        ],
-        generatedAt: DateTime.utc(2026, 7, 15, 12),
+      feedback: DemoTutor.feedback(
+        preferences: detail.conversation.preferences,
+        turns: detail.turns,
+        generatedAt: completedAt,
       ),
     );
     _conversations[conversationId] = completed;

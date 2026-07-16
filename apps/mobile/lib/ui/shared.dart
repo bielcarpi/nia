@@ -33,17 +33,16 @@ class NiaMark extends StatelessWidget {
         width: 38,
         height: 38,
         decoration: BoxDecoration(
-          color: onDark ? NiaColors.mint : NiaColors.evergreen,
+          color: NiaColors.white,
           borderRadius: BorderRadius.circular(12),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          'N',
-          style: TextStyle(
-            color: onDark ? NiaColors.evergreen : NiaColors.white,
-            fontWeight: FontWeight.w900,
-            fontSize: 20,
+          border: Border.all(
+            color: onDark ? const Color(0x33FFFFFF) : const Color(0x14152A25),
           ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.asset(
+          'assets/images/logo/nia-mark.png',
+          fit: BoxFit.cover,
         ),
       );
 }
@@ -63,8 +62,10 @@ class PageWidth extends StatelessWidget {
       );
 }
 
-class DemoBadge extends StatelessWidget {
-  const DemoBadge({super.key});
+class EnvironmentBadge extends StatelessWidget {
+  const EnvironmentBadge({required this.label, super.key});
+
+  final String label;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -73,14 +74,14 @@ class DemoBadge extends StatelessWidget {
           color: NiaColors.peach,
           borderRadius: BorderRadius.circular(99),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(Icons.science_outlined, size: 16),
-            SizedBox(width: 6),
+            const Icon(Icons.science_outlined, size: 16),
+            const SizedBox(width: 6),
             Text(
-              'DEMO',
-              style: TextStyle(
+              label,
+              style: const TextStyle(
                 fontSize: 11,
                 letterSpacing: 1,
                 fontWeight: FontWeight.w800,

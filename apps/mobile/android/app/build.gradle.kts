@@ -23,12 +23,6 @@ android {
         versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            // Replace with a private release signing config before store upload.
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
 }
 
 kotlin {

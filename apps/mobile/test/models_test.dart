@@ -27,7 +27,14 @@ void main() {
         'conversation': <String, Object?>{
           'id': 'conversation-1',
           'status': 'completed',
+          'preferences': <String, Object?>{
+            'target_language': 'es',
+            'level': 'intermediate',
+            'topic': 'Greetings',
+            'correction_style': 'gentle',
+          },
           'created_at': '2026-07-15T10:00:00Z',
+          'updated_at': '2026-07-15T10:05:00Z',
           'turn_count': 2,
         },
         'turns': <Object>[],
@@ -50,6 +57,29 @@ void main() {
       expect(detail.feedback?.corrections.single.corrected, 'Estoy bien.');
       expect(detail.feedback?.nextSteps.single, 'Practise greetings');
       expect(detail.feedback?.generatedAt.isUtc, isTrue);
+    });
+
+    test('conversation detail rejects a non-object feedback value', () {
+      expect(
+        () => ConversationDetail.fromJson(<String, Object?>{
+          'conversation': <String, Object?>{
+            'id': 'conversation-1',
+            'status': 'active',
+            'preferences': <String, Object?>{
+              'target_language': 'es',
+              'level': 'intermediate',
+              'topic': 'Greetings',
+              'correction_style': 'gentle',
+            },
+            'created_at': '2026-07-15T10:00:00Z',
+            'updated_at': '2026-07-15T10:00:00Z',
+            'turn_count': 0,
+          },
+          'turns': <Object?>[],
+          'feedback': 'not-an-object',
+        }),
+        throwsFormatException,
+      );
     });
   });
 }

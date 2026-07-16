@@ -42,7 +42,7 @@ class AppDependencies {
         config: config,
         auth: auth,
         preferences: ApiPreferencesRepository(api),
-        conversations: ApiConversationRepository(api),
+        conversations: ApiConversationRepository(api, allowDemoTransport: true),
         realtimeClientFactory: (grant) =>
             grant.canUseWebRtc ? WebRtcRealtimeClient() : DemoRealtimeClient(),
         apiClient: api,
@@ -69,8 +69,7 @@ class AppDependencies {
       auth: auth,
       preferences: ApiPreferencesRepository(api),
       conversations: ApiConversationRepository(api),
-      realtimeClientFactory: (grant) =>
-          grant.canUseWebRtc ? WebRtcRealtimeClient() : DemoRealtimeClient(),
+      realtimeClientFactory: (_) => WebRtcRealtimeClient(),
       apiClient: api,
     );
   }

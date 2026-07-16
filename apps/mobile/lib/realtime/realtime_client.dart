@@ -4,7 +4,9 @@ import 'dart:convert';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:http/http.dart' as http;
 import 'package:nia_flutter/core/api/api_client.dart';
+import 'package:nia_flutter/domain/demo_tutor.dart';
 import 'package:nia_flutter/domain/models.dart';
+import 'package:nia_flutter/realtime/webrtc_transport.dart';
 
 enum RealtimeEventKind {
   ready,
@@ -12,12 +14,14 @@ enum RealtimeEventKind {
   assistantDelta,
   assistantDone,
   microphoneChanged,
+  microphoneUnavailable,
   error,
   closed,
 }
 
 class RealtimeEvent {
   const RealtimeEvent(this.kind, {this.text, this.microphoneEnabled});
+
   final RealtimeEventKind kind;
   final String? text;
   final bool? microphoneEnabled;
@@ -25,6 +29,7 @@ class RealtimeEvent {
 
 class RealtimeTransportException implements Exception {
   const RealtimeTransportException(this.message);
+
   final String message;
 
   @override
@@ -62,30 +67,29 @@ class DemoRealtimeClient implements RealtimeClient {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     if (_closed) return;
     _events.add(const RealtimeEvent(RealtimeEventKind.ready));
-    final preferences = grant.conversation.preferences;
-    final greeting = switch (preferences.targetLanguage) {
-      TargetLanguage.spanish =>
-        '¡Hola! Hablemos de ${preferences.topic.toLowerCase()}. ¿Cómo empezarías?',
-      TargetLanguage.english =>
-        'Hello! Let’s talk about ${preferences.topic.toLowerCase()}. How would you begin?',
-      TargetLanguage.catalan =>
-        'Hola! Parlem de ${preferences.topic.toLowerCase()}. Com començaries?',
-    };
-    _events.add(RealtimeEvent(RealtimeEventKind.assistantDone, text: greeting));
+    _events.add(
+      RealtimeEvent(
+        RealtimeEventKind.assistantDone,
+        text: DemoTutor.greeting(grant.conversation.preferences),
+      ),
+    );
   }
 
   @override
   Future<void> sendText(String text) async {
-    if (_grant == null || _closed) {
+    final grant = _grant;
+    if (grant == null || _closed) {
       throw const RealtimeTransportException('The session is not connected.');
     }
-    final reply = _replyFor(_grant!.conversation.preferences);
+    final reply = DemoTutor.reply(grant.conversation.preferences, text);
     for (final chunk in _chunks(reply)) {
       if (_closed) return;
       await Future<void>.delayed(const Duration(milliseconds: 90));
       _events.add(RealtimeEvent(RealtimeEventKind.assistantDelta, text: chunk));
     }
-    _events.add(RealtimeEvent(RealtimeEventKind.assistantDone, text: reply));
+    if (!_closed) {
+      _events.add(RealtimeEvent(RealtimeEventKind.assistantDone, text: reply));
+    }
   }
 
   @override
@@ -135,18 +139,6 @@ class DemoRealtimeClient implements RealtimeClient {
     await _events.close();
   }
 
-  static String _replyFor(
-    TutorPreferences preferences,
-  ) =>
-      switch (preferences.targetLanguage) {
-        TargetLanguage.spanish =>
-          'Muy bien. Suena natural. Añade un detalle más: ¿cuándo ocurrió y cómo te sentiste?',
-        TargetLanguage.english =>
-          'Nice work—that sounds natural. Add one more detail: when did it happen, and how did you feel?',
-        TargetLanguage.catalan =>
-          'Molt bé. Sona natural. Afegeix-hi un detall: quan va passar i com et vas sentir?',
-      };
-
   static Iterable<String> _chunks(String text) sync* {
     final words = text.split(' ');
     for (var index = 0; index < words.length; index += 3) {
@@ -157,97 +149,63 @@ class DemoRealtimeClient implements RealtimeClient {
 }
 
 class WebRtcRealtimeClient implements RealtimeClient, RealtimeAudioSink {
-  WebRtcRealtimeClient({http.Client? httpClient})
-      : _http = httpClient ?? http.Client();
+  WebRtcRealtimeClient({
+    http.Client? httpClient,
+    WebRtcTransport? transport,
+    Duration readyTimeout = const Duration(seconds: 15),
+  })  : _http = httpClient ?? http.Client(),
+        _transport = transport ?? FlutterWebRtcTransport(),
+        _readyTimeout = readyTimeout;
 
   final http.Client _http;
+  final WebRtcTransport _transport;
+  final Duration _readyTimeout;
   final _events = StreamController<RealtimeEvent>.broadcast();
-  @override
-  final RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
-  bool _rendererInitialized = false;
-
-  @override
-  bool get audioSinkReady => _rendererInitialized;
-  RTCPeerConnection? _peerConnection;
-  RTCDataChannel? _dataChannel;
-  MediaStream? _localStream;
+  StreamSubscription<WebRtcTransportEvent>? _transportSubscription;
+  Completer<String?>? _readySignal;
   bool _closed = false;
+  bool _connected = false;
 
   @override
   Stream<RealtimeEvent> get events => _events.stream;
 
   @override
+  RTCVideoRenderer get remoteRenderer => _transport.remoteRenderer;
+
+  @override
+  bool get audioSinkReady => _transport.rendererInitialized;
+
+  @override
   Future<void> connect(RealtimeGrant grant) async {
+    if (_closed) {
+      throw const RealtimeTransportException(
+        'The realtime session has already closed.',
+      );
+    }
+    if (_readySignal != null) {
+      throw const RealtimeTransportException(
+        'The realtime session has already started.',
+      );
+    }
     if (!grant.canUseWebRtc) {
       throw const RealtimeTransportException(
-        'The server did not issue a WebRTC session.',
+        'The server did not issue a valid WebRTC session.',
       );
     }
     if (grant.expiresAt?.isBefore(
           DateTime.now().toUtc().add(const Duration(seconds: 5)),
         ) ??
-        false) {
+        true) {
       throw const RealtimeTransportException(
-        'The realtime session expired before it could connect.',
+        'The realtime session is missing a valid expiry or has expired.',
       );
     }
 
+    final readySignal = Completer<String?>();
+    _readySignal = readySignal;
+    _transportSubscription ??= _transport.events.listen(_handleTransportEvent);
     try {
-      await remoteRenderer.initialize();
-      _rendererInitialized = true;
-      final stream = await navigator.mediaDevices.getUserMedia(
-        <String, dynamic>{
-          'audio': <String, dynamic>{
-            'echoCancellation': true,
-            'noiseSuppression': true,
-            'autoGainControl': true,
-          },
-          'video': false,
-        },
-      );
-      _localStream = stream;
-      for (final track in stream.getAudioTracks()) {
-        track.enabled = false;
-      }
-
-      final peerConnection = await createPeerConnection(<String, dynamic>{
-        'iceServers': <Object>[],
-      });
-      _peerConnection = peerConnection;
-      peerConnection.onTrack = (event) {
-        if (event.streams.isNotEmpty) {
-          remoteRenderer.srcObject = event.streams.first;
-        }
-      };
-      for (final track in stream.getAudioTracks()) {
-        await peerConnection.addTrack(track, stream);
-      }
-
-      final dataChannel = await peerConnection.createDataChannel(
-        'oai-events',
-        RTCDataChannelInit()..ordered = true,
-      );
-      _dataChannel = dataChannel;
-      dataChannel.onDataChannelState = (state) {
-        if (_closed) return;
-        if (state == RTCDataChannelState.RTCDataChannelOpen) {
-          _events.add(const RealtimeEvent(RealtimeEventKind.ready));
-        } else if (state == RTCDataChannelState.RTCDataChannelClosed) {
-          _events.add(const RealtimeEvent(RealtimeEventKind.closed));
-        }
-      };
-      dataChannel.onMessage = _handleMessage;
-
-      final offer = await peerConnection.createOffer(<String, dynamic>{
-        'offerToReceiveAudio': true,
-      });
-      final sdp = offer.sdp;
-      if (sdp == null || sdp.isEmpty) {
-        throw const RealtimeTransportException(
-          'The device could not create an audio session.',
-        );
-      }
-      await peerConnection.setLocalDescription(offer);
+      final offer = await _transport.start();
       final response = await _http
           .post(
             grant.endpoint,
@@ -255,7 +213,7 @@ class WebRtcRealtimeClient implements RealtimeClient, RealtimeAudioSink {
               'Authorization': 'Bearer ${grant.clientSecret}',
               'Content-Type': 'application/sdp',
             },
-            body: sdp,
+            body: offer,
           )
           .timeout(const Duration(seconds: 15));
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -264,31 +222,76 @@ class WebRtcRealtimeClient implements RealtimeClient, RealtimeAudioSink {
           '(${response.statusCode}).',
         );
       }
-      await peerConnection.setRemoteDescription(
-        RTCSessionDescription(response.body, 'answer'),
-      );
+      if (response.body.trim().isEmpty) {
+        throw const RealtimeTransportException(
+          'The realtime service returned an empty session answer.',
+        );
+      }
+      await _transport.applyAnswer(response.body);
+      final failure = await readySignal.future.timeout(_readyTimeout);
+      if (failure != null) throw RealtimeTransportException(failure);
     } on RealtimeTransportException {
       await close();
       rethrow;
+    } on TimeoutException {
+      await close();
+      throw const RealtimeTransportException(
+        'The realtime session took too long to become ready.',
+      );
     } on Object {
       await close();
       throw const RealtimeTransportException(
-        'Nia could not establish a secure audio session.',
+        'Nia could not establish a secure realtime session.',
       );
     }
   }
 
+  void _handleTransportEvent(WebRtcTransportEvent event) {
+    if (_closed) return;
+    switch (event.kind) {
+      case WebRtcTransportEventKind.dataChannelOpen:
+        _connected = true;
+        final readySignal = _readySignal;
+        if (readySignal != null && !readySignal.isCompleted) {
+          readySignal.complete(null);
+        }
+        _events.add(const RealtimeEvent(RealtimeEventKind.ready));
+      case WebRtcTransportEventKind.dataChannelClosed:
+        unawaited(_failConnection('The realtime connection closed.'));
+      case WebRtcTransportEventKind.message:
+        _handleProtocolMessage(event.text ?? '');
+      case WebRtcTransportEventKind.microphoneUnavailable:
+        _events.add(
+          const RealtimeEvent(
+            RealtimeEventKind.microphoneUnavailable,
+            text:
+                'Microphone access is unavailable. You can continue by typing.',
+          ),
+        );
+      case WebRtcTransportEventKind.connectionFailed:
+        unawaited(_failConnection('The realtime connection was interrupted.'));
+    }
+  }
+
+  Future<void> _failConnection(String message) async {
+    if (_closed) return;
+    final readySignal = _readySignal;
+    if (readySignal != null && !readySignal.isCompleted) {
+      readySignal.complete(message);
+    }
+    _events.add(RealtimeEvent(RealtimeEventKind.error, text: message));
+    await close();
+  }
+
   @override
   Future<void> sendText(String text) async {
-    final channel = _dataChannel;
-    if (channel == null ||
-        channel.state != RTCDataChannelState.RTCDataChannelOpen) {
+    if (_closed || !_connected) {
       throw const RealtimeTransportException(
         'The realtime session is still connecting.',
       );
     }
-    await channel.send(
-      RTCDataChannelMessage(
+    try {
+      await _transport.send(
         jsonEncode(<String, Object>{
           'type': 'conversation.item.create',
           'item': <String, Object>{
@@ -299,54 +302,74 @@ class WebRtcRealtimeClient implements RealtimeClient, RealtimeAudioSink {
             ],
           },
         }),
-      ),
-    );
-    await channel.send(
-      RTCDataChannelMessage(
+      );
+      await _transport.send(
         jsonEncode(<String, Object>{'type': 'response.create'}),
-      ),
-    );
-  }
-
-  @override
-  Future<void> setMicrophoneEnabled(bool enabled) async {
-    for (final track
-        in _localStream?.getAudioTracks() ?? <MediaStreamTrack>[]) {
-      track.enabled = enabled;
-    }
-    if (!_closed) {
-      _events.add(
-        RealtimeEvent(
-          RealtimeEventKind.microphoneChanged,
-          microphoneEnabled: enabled,
-        ),
+      );
+    } on Object {
+      throw const RealtimeTransportException(
+        'The message could not be sent. Check the session and retry.',
       );
     }
   }
 
-  void _handleMessage(RTCDataChannelMessage message) {
-    if (_closed || message.isBinary) return;
+  @override
+  Future<void> setMicrophoneEnabled(bool enabled) async {
     try {
-      final json = asJsonMap(jsonDecode(message.text) as Object?);
-      final type = json?['type'] as String? ?? '';
+      await _transport.setMicrophoneEnabled(enabled);
+      if (!_closed) {
+        _events.add(
+          RealtimeEvent(
+            RealtimeEventKind.microphoneChanged,
+            microphoneEnabled: enabled,
+          ),
+        );
+      }
+    } on MicrophoneUnavailableException {
+      throw const RealtimeTransportException(
+        'Microphone access is unavailable. Continue by typing.',
+      );
+    } on Object {
+      throw const RealtimeTransportException(
+        'The microphone could not be changed. Continue by typing.',
+      );
+    }
+  }
+
+  void _handleProtocolMessage(String message) {
+    try {
+      final json = asJsonMap(jsonDecode(message));
+      final type = json?['type'];
+      if (type is! String) return;
       if (type == 'response.output_text.delta' ||
           type == 'response.output_audio_transcript.delta') {
-        final delta = json?['delta'] as String?;
-        if (delta?.isNotEmpty == true) {
+        final delta = json?['delta'];
+        if (delta is String && delta.isNotEmpty) {
           _events.add(
             RealtimeEvent(RealtimeEventKind.assistantDelta, text: delta),
           );
         }
       } else if (type == 'response.output_text.done' ||
           type == 'response.output_audio_transcript.done') {
-        final text = json?['text'] as String? ?? json?['transcript'] as String?;
-        _events.add(RealtimeEvent(RealtimeEventKind.assistantDone, text: text));
+        final text = json?['text'];
+        final transcript = json?['transcript'];
+        final completed = text is String
+            ? text
+            : transcript is String
+                ? transcript
+                : null;
+        _events.add(
+          RealtimeEvent(RealtimeEventKind.assistantDone, text: completed),
+        );
       } else if (type ==
           'conversation.item.input_audio_transcription.completed') {
-        final transcript = json?['transcript'] as String?;
-        if (transcript?.trim().isNotEmpty == true) {
+        final transcript = json?['transcript'];
+        if (transcript is String && transcript.trim().isNotEmpty) {
           _events.add(
-            RealtimeEvent(RealtimeEventKind.userTranscript, text: transcript),
+            RealtimeEvent(
+              RealtimeEventKind.userTranscript,
+              text: transcript,
+            ),
           );
         }
       } else if (type == 'error') {
@@ -358,7 +381,14 @@ class WebRtcRealtimeClient implements RealtimeClient, RealtimeAudioSink {
         );
       }
     } on FormatException {
-      // Ignore non-JSON protocol frames. No session content is logged.
+      return;
+    } on Object {
+      _events.add(
+        const RealtimeEvent(
+          RealtimeEventKind.error,
+          text: 'Nia received an unexpected realtime event.',
+        ),
+      );
     }
   }
 
@@ -366,21 +396,25 @@ class WebRtcRealtimeClient implements RealtimeClient, RealtimeAudioSink {
   Future<void> close() async {
     if (_closed) return;
     _closed = true;
-    for (final track in _localStream?.getTracks() ?? <MediaStreamTrack>[]) {
-      await track.stop();
+    _connected = false;
+    final readySignal = _readySignal;
+    if (readySignal != null && !readySignal.isCompleted) {
+      readySignal.complete(
+        'The realtime session closed before it became ready.',
+      );
     }
-    await _localStream?.dispose();
-    if (_rendererInitialized) remoteRenderer.srcObject = null;
-    await _dataChannel?.close();
-    await _peerConnection?.close();
-    _events.add(const RealtimeEvent(RealtimeEventKind.closed));
+    await _transport.close();
+    if (!_events.isClosed) {
+      _events.add(const RealtimeEvent(RealtimeEventKind.closed));
+    }
   }
 
   @override
   Future<void> dispose() async {
     await close();
+    await _transportSubscription?.cancel();
     _http.close();
-    if (_rendererInitialized) await remoteRenderer.dispose();
+    await _transport.dispose();
     await _events.close();
   }
 }

@@ -57,6 +57,41 @@ void main() {
     );
     client.close();
   });
+
+  test('malformed API error fields still produce a safe typed exception',
+      () async {
+    final client = ApiClient(
+      baseUrl: Uri.parse('https://api.nia.test'),
+      auth: _TokenAuthService(),
+      httpClient: MockClient(
+        (_) async => http.Response(
+          jsonEncode(<String, Object>{
+            'error': <String, Object>{
+              'code': 42,
+              'message': false,
+              'request_id': <Object>[],
+            },
+          }),
+          502,
+        ),
+      ),
+    );
+
+    await expectLater(
+      client.get('/api/v1/conversations'),
+      throwsA(
+        isA<ApiException>()
+            .having((error) => error.code, 'code', 'http_error')
+            .having((error) => error.statusCode, 'statusCode', 502)
+            .having(
+              (error) => error.message,
+              'message',
+              'The server could not complete this request.',
+            ),
+      ),
+    );
+    client.close();
+  });
 }
 
 class _TokenAuthService implements AuthService {
@@ -70,6 +105,12 @@ class _TokenAuthService implements AuthService {
   Future<void> dispose() async {}
 
   @override
+  Future<void> createAccount({
+    required String email,
+    required String password,
+  }) async {}
+
+  @override
   Future<String?> idToken() async => 'firebase-id-token';
 
   @override
@@ -78,6 +119,9 @@ class _TokenAuthService implements AuthService {
 
   @override
   Future<void> signInToDemo() async {}
+
+  @override
+  Future<void> sendPasswordReset(String email) async {}
 
   @override
   Future<void> signOut() async {}

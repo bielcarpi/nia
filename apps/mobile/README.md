@@ -1,29 +1,32 @@
 # Nia Flutter client
 
-The Nia client is a responsive Flutter app for low-pressure language practice. It includes a complete offline demo, an end-to-end local API mode, and production boundaries for Firebase authentication, Firebase App Check, and OpenAI Realtime over WebRTC.
+Nia is a responsive Flutter app for low-pressure language practice. The client
+supports a credential-free offline demo, the repository's local Go API, and a
+Firebase-authenticated production mode with realtime audio over WebRTC.
 
-The default build needs no account, API key, Firebase project, microphone, or backend.
-
-## Try it
+## Run the offline demo
 
 ```bash
 flutter pub get
 flutter run -d chrome
 ```
 
-Choose **Open the demo**. The demo covers session preferences, a deterministic conversation, idempotent transcript persistence, conversation history, deletion, and structured feedback. Its data is held in memory and resets on restart.
+Choose **Open the demo**. Replies and feedback are generated locally from the
+learner's saved transcript, selected language, topic, and correction style. The
+flow includes preferences, text or simulated voice turns, history, pagination,
+deletion, and completion feedback. Data stays in memory and resets on restart.
 
 ## Runtime modes
 
-| Mode | Purpose | Data path | Realtime path |
+| Mode | Data | Realtime | Credentials |
 | --- | --- | --- | --- |
-| Offline demo (default) | Reviewer-friendly product tour | In-memory repository | Deterministic local client |
-| Local stack | Exercise Flutter → Go API without credentials | Go API local store | API-selected demo transport |
-| Production | Real authenticated application | Firebase-authenticated Go API | Short-lived WebRTC grant |
+| Offline demo (default) | In memory | Local deterministic tutor | None |
+| Local stack | Local Go API | Transport selected by the local API | Fixed local demo token |
+| Production | Go API | WebRTC grant issued by the API | Firebase Auth + App Check |
 
-### Local stack
+### Local Go API
 
-Start the repository's Go API in local demo-auth mode, then run:
+Start the repository's API in its local demo-auth environment, then run:
 
 ```bash
 flutter run -d chrome \
@@ -32,11 +35,14 @@ flutter run -d chrome \
   --dart-define=NIA_API_BASE_URL=http://localhost:8080
 ```
 
-The `DemoAuthService` owns the fixed `nia-local-demo` bearer token. The API accepts it only in its explicit local environment; the production server rejects it. App Check is intentionally omitted in this mode.
+If `NIA_API_BASE_URL` is omitted in a demo build, it defaults to
+`http://localhost:8080`. The fixed `nia-local-demo` bearer token is only for the
+API's explicit local environment. App Check is not sent in this mode.
 
 ### Production
 
-Production fails closed when required Firebase configuration is absent:
+Production has no demo transport fallback. It requires an explicit, absolute,
+non-local HTTPS API URL and complete Firebase configuration:
 
 ```bash
 flutter run -d chrome \
@@ -50,47 +56,70 @@ flutter run -d chrome \
   --dart-define=NIA_FIREBASE_RECAPTCHA_SITE_KEY=...
 ```
 
-`NIA_FIREBASE_RECAPTCHA_SITE_KEY` is required for production web builds. Android uses Play Integrity and Apple platforms use App Attest with a Device Check fallback. Register each shipped app with Firebase App Check before enabling server-side enforcement.
+`NIA_FIREBASE_RECAPTCHA_SITE_KEY` is required for production web builds.
+Android uses Play Integrity; Apple platforms use App Attest with a Device Check
+fallback. Register each released app with Firebase App Check before enforcing
+attestation on the API. The iOS target includes the production App Attest
+entitlement; its App ID and release provisioning profile must also enable the
+App Attest capability in the Apple Developer portal.
 
-Project-specific `google-services.json`, `GoogleService-Info.plist`, and generated Firebase options are deliberately not committed. Runtime Firebase options come from `--dart-define`; native store builds may still use local, ignored platform files when required by their release pipeline.
+Invalid production configuration renders a startup error instead of silently
+switching to demo data. The API URL parser rejects HTTP, localhost, credentials,
+paths, queries, and fragments. Realtime responses are also parsed strictly:
+production accepts only a WebRTC transport with an HTTPS endpoint, short-lived
+client secret, model, positive expiry, and a complete conversation object.
+
+Project-specific Firebase service files are not committed. Runtime Firebase
+options come from `--dart-define`; native release pipelines can provide ignored
+platform files when their tooling requires them. Native signing material is
+also intentionally absent: an Android release pipeline must inject its private
+keystore and signing configuration, while an Apple release pipeline must select
+the owning team and an App-Attest-enabled provisioning profile.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    UI[Responsive Flutter UI] --> Domain[Typed domain models]
+    UI[Flutter UI] --> Domain[Typed models]
     Domain --> Repo[Repository interfaces]
-    Repo -->|offline| Memory[In-memory demo]
-    Repo -->|local / production| API[Typed HTTP client]
+    Repo -->|offline| Memory[In-memory repository]
+    Repo -->|local or production| API[Go API client]
     API --> Auth[Firebase ID token]
     API --> Check[Firebase App Check token]
-    UI --> RT[RealtimeClient interface]
-    RT -->|demo| Script[Deterministic scripted client]
-    RT -->|production| WebRTC[Direct WebRTC media + data channel]
+    UI --> RT[RealtimeClient]
+    RT -->|demo| Tutor[Transcript-derived tutor]
+    RT -->|production| WebRTC[WebRTC transport]
 ```
 
-The important boundaries are deliberately small:
-
-- `AuthService` isolates Firebase from the UI and never logs credentials.
-- `AppCheckTokenProvider` adds `X-Firebase-AppCheck` only in production.
-- `ApiClient` enforces timeouts, typed error envelopes, correlation IDs, and bearer/App Check headers.
-- `PreferencesRepository` and `ConversationRepository` make local and remote behavior interchangeable.
-- `RealtimeClient` separates deterministic review flows from the real WebRTC transport.
-- `WebRtcRealtimeClient` receives only a short-lived client secret issued by the Go API. A long-lived OpenAI key never enters the app.
+- `AuthService` isolates Firebase authentication and account flows from the UI.
+- `ApiClient` owns timeouts, typed error envelopes, correlation IDs, and auth
+  headers.
+- Repository interfaces keep in-memory and HTTP-backed data flows consistent.
+- `WebRtcTransport` isolates the platform plugin, peer connection, media track,
+  and data channel from protocol handling.
+- The app receives a server-minted ephemeral realtime secret; a provider API
+  key is never shipped in the client.
 
 ## Realtime lifecycle
 
-1. The client calls `POST /api/v1/realtime/sessions` with language, level, topic, and correction style.
-2. The Go API returns a conversation plus either a demo transport or a short-lived WebRTC client secret.
-3. For WebRTC, the client opens one peer connection to the returned SDP endpoint. The microphone track begins muted.
-4. The learner explicitly unmutes. Audio stays in the WebRTC media track; the app does not write whole-session audio files or retain audio buffers.
-5. Transcript turns are idempotently persisted with client-generated turn IDs.
-6. Leaving or finishing stops every media track and closes the data channel and peer connection.
-7. Completing the conversation returns structured strengths, corrections, and next steps.
+1. The client requests a session from `POST /api/v1/realtime/sessions`.
+2. The Go API returns the conversation and its realtime transport metadata.
+3. Production posts a WebRTC SDP offer to the returned HTTPS endpoint using the
+   ephemeral bearer secret, then applies the SDP answer.
+4. Text messages use the realtime data channel. Microphone permission failure
+   leaves the data channel and typed composer available.
+5. Transcript turns are persisted with client-generated IDs so retries are
+   idempotent.
+6. Leaving the screen stops media tracks and closes the data channel, peer
+   connection, renderer, subscriptions, and HTTP client.
+7. Completing a conversation waits for pending transcript writes before asking
+   the API for structured feedback.
 
-The implementation recognizes current text and audio-transcript delta/done events. The server owns the realtime session policy, model, voice, input transcription, and tutor instructions.
+The automated suite exercises this lifecycle through a fake transport and HTTP
+server. A live provider session and physical-device media permissions remain
+release checks, not claims made by the unit tests.
 
-## API contract used by the client
+## API contract
 
 - `GET/PATCH /api/v1/me/preferences`
 - `POST /api/v1/realtime/sessions`
@@ -99,48 +128,52 @@ The implementation recognizes current text and audio-transcript delta/done event
 - `PUT /api/v1/conversations/{id}/turns/{turn_id}`
 - `POST /api/v1/conversations/{id}/complete`
 
-Errors use `{ "error": { "code", "message", "request_id" } }`. List endpoints use `{ "items", "next_cursor"? }`. JSON parsing tolerates harmless additional fields while keeping feedback corrections and next steps lossless.
+Errors use `{ "error": { "code", "message", "request_id" } }`; list responses
+use `{ "items", "next_cursor"? }`. Required response fields and enum values are
+validated instead of being replaced with client defaults. Unknown additional
+fields remain forward-compatible.
 
-## Source map
+## Source layout
 
 ```text
 lib/
-├── app/          composition root and dependency ownership
-├── config/       fail-closed runtime configuration
-├── core/         HTTP, auth, App Check, and visual foundations
-├── data/         API and in-memory repository implementations
-├── domain/       wire-compatible models
-├── realtime/     deterministic and WebRTC transports
-└── ui/           responsive product screens and shared components
+├── app/          startup, dependency ownership, and app shell
+├── config/       runtime configuration and validation
+├── core/         HTTP, authentication, App Check, and theme
+├── data/         HTTP and in-memory repositories
+├── domain/       models and the local demo tutor
+├── realtime/     protocol client and WebRTC transport
+└── ui/           responsive screens and shared widgets
 ```
 
-There is no global service locator and no state-management framework. Dependencies are constructed once, passed explicitly, and represented by narrow interfaces. This keeps tests fast and makes security-sensitive behavior visible during review.
+Dependencies are constructed once and passed through narrow interfaces. There
+is no global service locator.
 
-## Quality checks
+## Verification
 
 ```bash
 dart format --output=none --set-exit-if-changed lib test
-flutter analyze
+flutter analyze --fatal-infos
 flutter test
 flutter build web --release --dart-define=NIA_DEMO_MODE=true
 ```
 
-Tests cover:
+Tests cover strict configuration and grant parsing, API auth and error handling,
+the demo lifecycle and transcript-derived feedback, WebRTC protocol events,
+microphone-denied typed chat, account validation and password reset, history
+pagination and disposal races, completion write barriers, and the narrow-screen
+practice journey.
 
-- the public preferences and feedback JSON contracts;
-- the complete in-memory conversation lifecycle and idempotent turns;
-- authorization, App Check, and request-correlation headers;
-- typed API error handling; and
-- the full narrow-screen demo journey from landing page to feedback.
+## Security notes
 
-## Security and privacy notes
-
-- No provider API key or project-specific Firebase file is committed.
-- Passwords, tokens, transcripts, and realtime protocol payloads are never logged.
-- Production API calls carry both a Firebase ID token and App Check token.
-- The WebRTC credential is short-lived and scoped by the server-created session.
-- Microphone access is explicit and bounded to a live screen.
-- Conversation deletion is a first-class user action.
+- No provider API key or project-specific Firebase service file is committed.
+- Passwords, tokens, transcripts, and realtime protocol payloads are not logged.
+- Production API calls include Firebase ID and App Check tokens.
+- Production accepts only a server-issued WebRTC grant with an expiry.
+- Microphone use is explicit and scoped to an active conversation screen.
+- Conversation deletion is available from history.
 - The offline demo does not make network requests.
 
-This directory is a client, not a security boundary. The Go API must still verify Firebase Auth and App Check, enforce ownership and quotas, constrain realtime sessions, and redact application logs.
+The mobile client is not a security boundary. The Go API must verify Firebase
+Auth and App Check, enforce resource ownership and quotas, constrain realtime
+sessions, and redact sensitive logs.

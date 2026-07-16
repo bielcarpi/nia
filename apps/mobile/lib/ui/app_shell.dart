@@ -84,13 +84,15 @@ class _AppShellState extends State<AppShell> {
                     ),
                   ),
                 ),
-                Expanded(child: pages[_selectedIndex]),
+                Expanded(
+                  child: IndexedStack(index: _selectedIndex, children: pages),
+                ),
               ],
             ),
           );
         }
         return Scaffold(
-          body: pages[_selectedIndex],
+          body: IndexedStack(index: _selectedIndex, children: pages),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) =>
@@ -148,35 +150,44 @@ class _ProfileScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
-                            'Environment',
+                            'Your session data',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          if (dependencies.config.demoMode) const DemoBadge(),
+                          if (!dependencies.config.production)
+                            EnvironmentBadge(
+                              label: dependencies.config.localStack
+                                  ? 'LOCAL'
+                                  : 'DEMO',
+                            ),
                         ],
                       ),
                       const SizedBox(height: 16),
                       _InfoLine(
                         icon: Icons.storage_outlined,
-                        title: dependencies.config.demoMode
-                            ? 'In-memory data'
-                            : 'Account-backed history',
-                        subtitle: dependencies.config.demoMode
+                        title: dependencies.config.offlineDemo
+                            ? 'On-device preview data'
+                            : dependencies.config.localStack
+                                ? 'Local API history'
+                                : 'Account-backed history',
+                        subtitle: dependencies.config.offlineDemo
                             ? 'Everything resets when the app restarts.'
-                            : 'Conversations are handled by the Nia API.',
+                            : dependencies.config.localStack
+                                ? 'Conversations are served by your local Go API.'
+                                : 'Your sessions stay available across devices.',
                       ),
                       const SizedBox(height: 16),
                       const _InfoLine(
                         icon: Icons.mic_none,
-                        title: 'Bounded microphone access',
+                        title: 'Voice when you want it',
                         subtitle:
-                            'Audio streams only during a live session and tracks stop on exit.',
+                            'You can keep practising by typing when a microphone is unavailable.',
                       ),
                       const SizedBox(height: 16),
                       const _InfoLine(
-                        icon: Icons.password_outlined,
-                        title: 'No provider keys in the app',
+                        icon: Icons.delete_outline,
+                        title: 'Conversation controls',
                         subtitle:
-                            'Production receives a short-lived session secret from the Go API.',
+                            'Delete any saved transcript and feedback from History.',
                       ),
                     ],
                   ),
@@ -187,7 +198,11 @@ class _ProfileScreen extends StatelessWidget {
                 onPressed: dependencies.auth.signOut,
                 icon: const Icon(Icons.logout),
                 label: Text(
-                  dependencies.config.demoMode ? 'Exit demo' : 'Sign out',
+                  dependencies.config.offlineDemo
+                      ? 'Exit demo'
+                      : dependencies.config.localStack
+                          ? 'Leave local stack'
+                          : 'Sign out',
                 ),
               ),
             ],

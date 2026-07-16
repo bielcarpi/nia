@@ -18,9 +18,6 @@ class ApiException implements Exception {
   final int? statusCode;
   final String? requestId;
 
-  bool get retryable =>
-      statusCode == null || statusCode == 408 || (statusCode ?? 0) >= 500;
-
   @override
   String toString() => message;
 }
@@ -119,12 +116,18 @@ class ApiClient {
   ) {
     final root = asJsonMap(decoded);
     final error = asJsonMap(root?['error']);
+    final code = error?['code'];
+    final message = error?['message'];
+    final requestId = error?['request_id'];
     return ApiException(
-      code: error?['code'] as String? ?? 'http_error',
-      message: error?['message'] as String? ??
-          'The server could not complete this request.',
+      code: code is String && code.isNotEmpty ? code : 'http_error',
+      message: message is String && message.isNotEmpty
+          ? message
+          : 'The server could not complete this request.',
       statusCode: statusCode,
-      requestId: error?['request_id'] as String? ?? fallbackRequestId,
+      requestId: requestId is String && requestId.isNotEmpty
+          ? requestId
+          : fallbackRequestId,
     );
   }
 

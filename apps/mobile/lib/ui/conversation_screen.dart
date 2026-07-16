@@ -6,6 +6,7 @@ import 'package:nia_flutter/core/theme/nia_theme.dart';
 import 'package:nia_flutter/data/repositories.dart';
 import 'package:nia_flutter/domain/models.dart';
 import 'package:nia_flutter/realtime/realtime_client.dart';
+import 'package:nia_flutter/ui/conversation_widgets.dart';
 import 'package:nia_flutter/ui/history_screen.dart';
 import 'package:nia_flutter/ui/shared.dart';
 
@@ -35,6 +36,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
   bool _ready = false;
   bool _connecting = true;
   bool _microphoneEnabled = false;
+  bool _microphoneAvailable = true;
   bool _changingMicrophone = false;
   bool _sending = false;
   bool _awaitingAssistant = false;
@@ -118,6 +120,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
         setState(() {
           _microphoneEnabled = event.microphoneEnabled ?? false;
           _changingMicrophone = false;
+        });
+      case RealtimeEventKind.microphoneUnavailable:
+        setState(() {
+          _microphoneAvailable = false;
+          _microphoneEnabled = false;
+          _changingMicrophone = false;
+          _error = event.text ??
+              'Microphone access is unavailable. You can continue by typing.';
         });
       case RealtimeEventKind.error:
         setState(() {
@@ -222,6 +232,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
   Future<void> _toggleMicrophone() async {
     if (!_ready || _changingMicrophone) return;
+    if (!_microphoneAvailable) {
+      setState(() {
+        _error =
+            'Microphone access is unavailable. You can continue by typing.';
+      });
+      return;
+    }
     setState(() {
       _changingMicrophone = true;
       _error = null;
@@ -367,6 +384,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   connecting: _connecting,
                   ready: _ready,
                   microphoneEnabled: _microphoneEnabled,
+                  microphoneAvailable: _microphoneAvailable,
                   demo: widget.grant.transport == 'demo',
                 ),
                 if (_error != null)
@@ -391,14 +409,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                 (_assistantDraft.isEmpty ? 0 : 1),
                             itemBuilder: (context, index) {
                               if (index == _turns.length) {
-                                return _MessageBubble(
+                                return TranscriptBubble(
                                   role: TurnRole.assistant,
                                   text: _assistantDraft,
                                   streaming: true,
                                 );
                               }
                               final turn = _turns[index];
-                              return _MessageBubble(
+                              return TranscriptBubble(
                                 role: turn.role,
                                 text: turn.text,
                               );
@@ -411,6 +429,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   enabled: _ready && !_ending && !_awaitingAssistant,
                   sending: _sending,
                   microphoneEnabled: _microphoneEnabled,
+                  microphoneAvailable: _microphoneAvailable,
                   changingMicrophone: _changingMicrophone,
                   onMic: _toggleMicrophone,
                   onSend: _sendText,
@@ -427,27 +446,39 @@ class _SessionStatus extends StatelessWidget {
     required this.connecting,
     required this.ready,
     required this.microphoneEnabled,
+    required this.microphoneAvailable,
     required this.demo,
   });
 
   final bool connecting;
   final bool ready;
   final bool microphoneEnabled;
+  final bool microphoneAvailable;
   final bool demo;
 
   @override
   Widget build(BuildContext context) {
     final (icon, label, color) = connecting
         ? (Icons.sync, 'Securing session…', NiaColors.peach)
-        : microphoneEnabled
-            ? (Icons.mic, 'Listening now', NiaColors.peach)
-            : ready
-                ? (
-                    Icons.check_circle,
-                    demo ? 'Demo ready' : 'Private connection ready',
-                    NiaColors.mint,
-                  )
-                : (Icons.cloud_off, 'Disconnected', const Color(0xFFFFD4D4));
+        : !microphoneAvailable && ready
+            ? (
+                Icons.keyboard_alt_outlined,
+                'Text practice ready',
+                NiaColors.mint
+              )
+            : microphoneEnabled
+                ? (Icons.mic, 'Listening now', NiaColors.peach)
+                : ready
+                    ? (
+                        Icons.check_circle,
+                        demo ? 'Demo ready' : 'Session ready',
+                        NiaColors.mint,
+                      )
+                    : (
+                        Icons.cloud_off,
+                        'Disconnected',
+                        const Color(0xFFFFD4D4)
+                      );
     return Container(
       width: double.infinity,
       color: color,
@@ -459,7 +490,7 @@ class _SessionStatus extends StatelessWidget {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              '$label${demo ? ' · Mic triggers one scripted turn' : ''}',
+              label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
@@ -507,72 +538,13 @@ class _ConversationEmpty extends StatelessWidget {
       );
 }
 
-class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({
-    required this.role,
-    required this.text,
-    this.streaming = false,
-  });
-
-  final TurnRole role;
-  final String text;
-  final bool streaming;
-
-  @override
-  Widget build(BuildContext context) {
-    final user = role == TurnRole.user;
-    return Align(
-      alignment: user ? Alignment.centerRight : Alignment.centerLeft,
-      child: Semantics(
-        label: user ? 'You said' : 'Nia said',
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 620),
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          decoration: BoxDecoration(
-            color: user ? NiaColors.evergreen : NiaColors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(20),
-              topRight: const Radius.circular(20),
-              bottomLeft: Radius.circular(user ? 20 : 5),
-              bottomRight: Radius.circular(user ? 5 : 20),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Flexible(
-                child: Text(
-                  text,
-                  style: TextStyle(
-                    color: user ? NiaColors.white : NiaColors.ink,
-                    fontSize: 16,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-              if (streaming) ...<Widget>[
-                const SizedBox(width: 8),
-                const SizedBox.square(
-                  dimension: 10,
-                  child: CircularProgressIndicator(strokeWidth: 1.5),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _Composer extends StatelessWidget {
   const _Composer({
     required this.controller,
     required this.enabled,
     required this.sending,
     required this.microphoneEnabled,
+    required this.microphoneAvailable,
     required this.changingMicrophone,
     required this.onMic,
     required this.onSend,
@@ -582,6 +554,7 @@ class _Composer extends StatelessWidget {
   final bool enabled;
   final bool sending;
   final bool microphoneEnabled;
+  final bool microphoneAvailable;
   final bool changingMicrophone;
   final VoidCallback onMic;
   final VoidCallback onSend;
@@ -606,7 +579,9 @@ class _Composer extends StatelessWidget {
                   foregroundColor:
                       microphoneEnabled ? Colors.white : NiaColors.evergreen,
                 ),
-                onPressed: enabled && !changingMicrophone ? onMic : null,
+                onPressed: enabled && microphoneAvailable && !changingMicrophone
+                    ? onMic
+                    : null,
                 icon: changingMicrophone
                     ? const SizedBox.square(
                         dimension: 18,

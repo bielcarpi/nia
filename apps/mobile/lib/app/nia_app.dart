@@ -39,3 +39,60 @@ class _NiaAppState extends State<NiaApp> {
         ),
       );
 }
+
+class NiaBootstrapErrorApp extends StatelessWidget {
+  const NiaBootstrapErrorApp({required this.error, super.key});
+
+  final Object error;
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'Nia setup required',
+        debugShowCheckedModeBanner: false,
+        theme: buildNiaTheme(),
+        home: Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(28),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          const Icon(Icons.settings_suggest_outlined, size: 38),
+                          const SizedBox(height: 18),
+                          Text(
+                            'Nia needs valid runtime configuration',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            'The app stopped before opening a network connection. '
+                            'Check the documented --dart-define values and restart.',
+                          ),
+                          const SizedBox(height: 18),
+                          SelectableText(
+                            _bootstrapMessage(error),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+}
+
+String _bootstrapMessage(Object error) {
+  if (error is StateError) return error.message.toString();
+  return 'Startup failed. Verify Firebase and API configuration.';
+}

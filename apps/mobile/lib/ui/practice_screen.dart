@@ -130,7 +130,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             const NiaWordmark(),
-            if (widget.dependencies.config.demoMode) const DemoBadge(),
+            if (!widget.dependencies.config.production)
+              EnvironmentBadge(
+                label: widget.dependencies.config.localStack ? 'LOCAL' : 'DEMO',
+              ),
           ],
         ),
         const SizedBox(height: 38),
@@ -163,8 +166,10 @@ class _PracticeScreenState extends State<PracticeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Voice streams directly over WebRTC in production. '
-                    'The demo uses a deterministic local conversation.',
+                    widget.dependencies.config.offlineDemo
+                        ? 'This offline preview responds to what you type and '
+                            'keeps everything on this device.'
+                        : 'Choose a situation you genuinely want to rehearse.',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: NiaColors.mint),

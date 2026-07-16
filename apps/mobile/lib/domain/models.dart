@@ -8,9 +8,11 @@ enum TargetLanguage {
   final String label;
   final String greeting;
 
-  static TargetLanguage fromWire(String? value) => values.firstWhere(
+  static TargetLanguage fromWire(Object? value) => values.firstWhere(
         (item) => item.wireValue == value,
-        orElse: () => TargetLanguage.spanish,
+        orElse: () => throw FormatException(
+          'target_language must be one of es, en, or ca.',
+        ),
       );
 }
 
@@ -23,9 +25,11 @@ enum ProficiencyLevel {
   final String wireValue;
   final String label;
 
-  static ProficiencyLevel fromWire(String? value) => values.firstWhere(
+  static ProficiencyLevel fromWire(Object? value) => values.firstWhere(
         (item) => item.wireValue == value,
-        orElse: () => ProficiencyLevel.intermediate,
+        orElse: () => throw FormatException(
+          'level must be beginner, intermediate, or advanced.',
+        ),
       );
 }
 
@@ -39,9 +43,11 @@ enum CorrectionStyle {
   final String label;
   final String description;
 
-  static CorrectionStyle fromWire(String? value) => values.firstWhere(
+  static CorrectionStyle fromWire(Object? value) => values.firstWhere(
         (item) => item.wireValue == value,
-        orElse: () => CorrectionStyle.gentle,
+        orElse: () => throw FormatException(
+          'correction_style must be gentle, immediate, or summary.',
+        ),
       );
 }
 
@@ -86,16 +92,10 @@ class TutorPreferences {
 
   factory TutorPreferences.fromJson(Map<String, Object?> json) =>
       TutorPreferences(
-        targetLanguage: TargetLanguage.fromWire(
-          json['target_language'] as String?,
-        ),
-        level: ProficiencyLevel.fromWire(json['level'] as String?),
-        topic: (json['topic'] as String?)?.trim().isNotEmpty == true
-            ? (json['topic']! as String)
-            : 'Everyday life',
-        correctionStyle: CorrectionStyle.fromWire(
-          json['correction_style'] as String?,
-        ),
+        targetLanguage: TargetLanguage.fromWire(json['target_language']),
+        level: ProficiencyLevel.fromWire(json['level']),
+        topic: _requiredString(json, 'topic'),
+        correctionStyle: CorrectionStyle.fromWire(json['correction_style']),
       );
 }
 
@@ -103,8 +103,13 @@ enum ConversationStatus {
   active,
   completed;
 
-  static ConversationStatus fromWire(String? value) =>
-      value == 'completed' ? completed : active;
+  static ConversationStatus fromWire(Object? value) => switch (value) {
+        'active' => active,
+        'completed' => completed,
+        _ => throw const FormatException(
+            'status must be active or completed.',
+          ),
+      };
 }
 
 class ConversationSummary {
@@ -125,16 +130,16 @@ class ConversationSummary {
   final int turnCount;
 
   factory ConversationSummary.fromJson(Map<String, Object?> json) {
-    final preferencesJson = _map(json['preferences']);
+    final preferencesJson = _requiredMap(json, 'preferences');
+    final createdAt = _requiredDate(json, 'created_at');
+    _requiredDate(json, 'updated_at');
     return ConversationSummary(
-      id: json['id'] as String? ?? json['conversation_id'] as String? ?? '',
-      status: ConversationStatus.fromWire(json['status'] as String?),
-      preferences: preferencesJson == null
-          ? const TutorPreferences.defaults()
-          : TutorPreferences.fromJson(preferencesJson),
-      createdAt: _date(json['created_at']) ?? DateTime.now().toUtc(),
+      id: _requiredString(json, 'id'),
+      status: ConversationStatus.fromWire(json['status']),
+      preferences: TutorPreferences.fromJson(preferencesJson),
+      createdAt: createdAt,
       completedAt: _date(json['completed_at']),
-      turnCount: (json['turn_count'] as num?)?.toInt() ?? 0,
+      turnCount: _requiredNonNegativeInt(json, 'turn_count'),
     );
   }
 }
@@ -143,8 +148,11 @@ enum TurnRole {
   user,
   assistant;
 
-  static TurnRole fromWire(String? value) =>
-      value == 'assistant' ? assistant : user;
+  static TurnRole fromWire(Object? value) => switch (value) {
+        'user' => user,
+        'assistant' => assistant,
+        _ => throw const FormatException('role must be user or assistant.'),
+      };
 }
 
 class ConversationTurn {
@@ -168,10 +176,10 @@ class ConversationTurn {
 
   factory ConversationTurn.fromJson(Map<String, Object?> json) =>
       ConversationTurn(
-        id: json['id'] as String? ?? json['turn_id'] as String? ?? '',
-        role: TurnRole.fromWire(json['role'] as String?),
-        text: json['text'] as String? ?? '',
-        occurredAt: _date(json['occurred_at']) ?? DateTime.now().toUtc(),
+        id: _requiredString(json, 'id'),
+        role: TurnRole.fromWire(json['role']),
+        text: _requiredString(json, 'text'),
+        occurredAt: _requiredDate(json, 'occurred_at'),
       );
 }
 
@@ -192,16 +200,13 @@ class SessionFeedback {
 
   factory SessionFeedback.fromJson(Map<String, Object?> json) =>
       SessionFeedback(
-        summary: json['summary'] as String? ?? '',
-        strengths: _strings(json['strengths']),
-        corrections:
-            (json['corrections'] as List<Object?>? ?? const <Object?>[])
-                .map(_map)
-                .whereType<Map<String, Object?>>()
-                .map(FeedbackCorrection.fromJson)
-                .toList(growable: false),
-        nextSteps: _strings(json['next_steps']),
-        generatedAt: _date(json['generated_at']) ?? DateTime.now().toUtc(),
+        summary: _requiredString(json, 'summary'),
+        strengths: _requiredStringList(json, 'strengths'),
+        corrections: _requiredList(json, 'corrections')
+            .map((item) => FeedbackCorrection.fromJson(_expectMap(item)))
+            .toList(growable: false),
+        nextSteps: _requiredStringList(json, 'next_steps'),
+        generatedAt: _requiredDate(json, 'generated_at'),
       );
 }
 
@@ -218,9 +223,9 @@ class FeedbackCorrection {
 
   factory FeedbackCorrection.fromJson(Map<String, Object?> json) =>
       FeedbackCorrection(
-        original: json['original'] as String? ?? '',
-        corrected: json['corrected'] as String? ?? '',
-        explanation: json['explanation'] as String? ?? '',
+        original: _requiredString(json, 'original'),
+        corrected: _requiredString(json, 'corrected'),
+        explanation: _requiredString(json, 'explanation'),
       );
 }
 
@@ -236,15 +241,20 @@ class ConversationDetail {
   final SessionFeedback? feedback;
 
   factory ConversationDetail.fromJson(Map<String, Object?> json) {
-    final conversationJson = _map(json['conversation']) ?? json;
-    final turnsJson = json['turns'] as List<Object?>? ?? const <Object?>[];
-    final feedbackJson = _map(json['feedback']);
+    final conversationJson = _requiredMap(json, 'conversation');
+    final turnsJson = _requiredList(json, 'turns');
+    if (!json.containsKey('feedback')) {
+      throw const FormatException('feedback is required.');
+    }
+    final rawFeedback = json['feedback'];
+    final feedbackJson = _map(rawFeedback);
+    if (rawFeedback != null && feedbackJson == null) {
+      throw const FormatException('feedback must be an object or null.');
+    }
     return ConversationDetail(
       conversation: ConversationSummary.fromJson(conversationJson),
       turns: turnsJson
-          .map(_map)
-          .whereType<Map<String, Object?>>()
-          .map(ConversationTurn.fromJson)
+          .map((item) => ConversationTurn.fromJson(_expectMap(item)))
           .toList(growable: false),
       feedback:
           feedbackJson == null ? null : SessionFeedback.fromJson(feedbackJson),
@@ -278,27 +288,56 @@ class RealtimeGrant {
   bool get canUseWebRtc => transport == 'webrtc' && clientSecret != null;
 
   factory RealtimeGrant.fromJson(Map<String, Object?> json) {
-    final conversationJson = _map(json['conversation']);
-    final secretJson = _map(json['client_secret']);
-    final realtimeJson = _map(json['realtime']) ?? const <String, Object?>{};
+    final conversationJson = _requiredMap(json, 'conversation');
+    if (!json.containsKey('client_secret')) {
+      throw const FormatException('client_secret is required.');
+    }
+    final rawSecret = json['client_secret'];
+    final secretJson = _map(rawSecret);
+    if (rawSecret != null && secretJson == null) {
+      throw const FormatException('client_secret must be an object or null.');
+    }
+    final realtimeJson = _requiredMap(json, 'realtime');
+    final transport = _requiredString(realtimeJson, 'transport');
+    if (transport != 'demo' && transport != 'webrtc') {
+      throw const FormatException('realtime.transport is unsupported.');
+    }
+    final endpoint = Uri.tryParse(_requiredString(realtimeJson, 'endpoint'));
+    if (endpoint == null || !endpoint.hasScheme || endpoint.host.isEmpty) {
+      throw const FormatException('realtime.endpoint must be an absolute URI.');
+    }
+    if (transport == 'webrtc' && endpoint.scheme != 'https') {
+      throw const FormatException('WebRTC endpoint must use HTTPS.');
+    }
+    if (transport == 'webrtc' && secretJson == null) {
+      throw const FormatException('WebRTC sessions require client_secret.');
+    }
+    if (transport == 'demo' && secretJson != null) {
+      throw const FormatException(
+          'Demo sessions cannot contain client_secret.');
+    }
     final expiresAt = secretJson?['expires_at'];
+    if (secretJson != null &&
+        (expiresAt is! num ||
+            expiresAt.toInt() != expiresAt ||
+            expiresAt <= 0)) {
+      throw const FormatException(
+        'client_secret.expires_at must be a Unix timestamp.',
+      );
+    }
     return RealtimeGrant(
-      conversation: ConversationSummary.fromJson(
-        conversationJson ?? const <String, Object?>{},
-      ),
-      transport: realtimeJson['transport'] as String? ?? 'demo',
-      endpoint: Uri.parse(
-        realtimeJson['endpoint'] as String? ??
-            'https://api.openai.com/v1/realtime/calls',
-      ),
-      model: realtimeJson['model'] as String? ?? 'gpt-realtime-2.1',
-      clientSecret: secretJson?['value'] as String?,
+      conversation: ConversationSummary.fromJson(conversationJson),
+      transport: transport,
+      endpoint: endpoint,
+      model: _requiredString(realtimeJson, 'model'),
+      clientSecret:
+          secretJson == null ? null : _requiredString(secretJson, 'value'),
       expiresAt: expiresAt is num
           ? DateTime.fromMillisecondsSinceEpoch(
               expiresAt.toInt() * 1000,
               isUtc: true,
             )
-          : _date(expiresAt),
+          : null,
     );
   }
 }
@@ -316,6 +355,50 @@ DateTime? _date(Object? value) {
   return DateTime.tryParse(value)?.toUtc();
 }
 
-List<String> _strings(Object? value) => value is List<Object?>
-    ? value.whereType<String>().toList(growable: false)
-    : const <String>[];
+Map<String, Object?> _requiredMap(Map<String, Object?> json, String key) {
+  final value = _map(json[key]);
+  if (value == null) throw FormatException('$key must be an object.');
+  return value;
+}
+
+Map<String, Object?> _expectMap(Object? value) {
+  final map = _map(value);
+  if (map == null) throw const FormatException('Expected an object.');
+  return map;
+}
+
+List<Object?> _requiredList(Map<String, Object?> json, String key) {
+  final value = json[key];
+  if (value is! List<Object?>) throw FormatException('$key must be an array.');
+  return value;
+}
+
+List<String> _requiredStringList(Map<String, Object?> json, String key) =>
+    _requiredList(json, key).map((item) {
+      if (item is! String || item.trim().isEmpty) {
+        throw FormatException('$key must contain non-empty strings.');
+      }
+      return item;
+    }).toList(growable: false);
+
+String _requiredString(Map<String, Object?> json, String key) {
+  final value = json[key];
+  if (value is! String || value.trim().isEmpty) {
+    throw FormatException('$key must be a non-empty string.');
+  }
+  return value;
+}
+
+int _requiredNonNegativeInt(Map<String, Object?> json, String key) {
+  final value = json[key];
+  if (value is! num || value.toInt() != value || value < 0) {
+    throw FormatException('$key must be a non-negative integer.');
+  }
+  return value.toInt();
+}
+
+DateTime _requiredDate(Map<String, Object?> json, String key) {
+  final value = _date(json[key]);
+  if (value == null) throw FormatException('$key must be an ISO-8601 date.');
+  return value;
+}

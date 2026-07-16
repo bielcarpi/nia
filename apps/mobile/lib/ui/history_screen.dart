@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:nia_flutter/core/theme/nia_theme.dart';
 import 'package:nia_flutter/data/repositories.dart';
 import 'package:nia_flutter/domain/models.dart';
+import 'package:nia_flutter/ui/conversation_widgets.dart';
 import 'package:nia_flutter/ui/shared.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -13,20 +16,58 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  late Future<ConversationPage> _future;
+  final List<ConversationSummary> _items = <ConversationSummary>[];
+  String? _nextCursor;
+  String? _error;
+  bool _loading = true;
+  bool _loadingMore = false;
   String? _deletingId;
+  int _loadGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _future = widget.repository.list();
+    unawaited(_load(reset: true));
   }
 
-  void _reload() {
+  Future<void> _load({bool reset = false}) async {
+    if (!reset && (_loading || _loadingMore || _nextCursor == null)) return;
+    final generation = reset ? ++_loadGeneration : _loadGeneration;
+    final cursor = reset ? null : _nextCursor;
     setState(() {
-      _future = widget.repository.list();
+      if (reset) {
+        _loading = true;
+        _loadingMore = false;
+        _error = null;
+      } else {
+        _loadingMore = true;
+      }
     });
+    try {
+      final page = await widget.repository.list(cursor: cursor);
+      if (!mounted || generation != _loadGeneration) return;
+      setState(() {
+        if (reset) _items.clear();
+        final existing = _items.map((item) => item.id).toSet();
+        _items.addAll(page.items.where((item) => existing.add(item.id)));
+        _nextCursor = page.nextCursor;
+        _error = null;
+      });
+    } on Object catch (error) {
+      if (mounted && generation == _loadGeneration) {
+        setState(() => _error = friendlyError(error));
+      }
+    } finally {
+      if (mounted && generation == _loadGeneration) {
+        setState(() {
+          _loading = false;
+          _loadingMore = false;
+        });
+      }
+    }
   }
+
+  Future<void> _reload() => _load(reset: true);
 
   Future<void> _delete(ConversationSummary conversation) async {
     final confirmed = await showDialog<bool>(
@@ -48,11 +89,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
     setState(() => _deletingId = conversation.id);
     try {
       await widget.repository.delete(conversation.id);
-      _reload();
+      if (!mounted) return;
+      await _reload();
     } on Object catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -79,7 +121,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     const NiaWordmark(),
                     IconButton(
                       tooltip: 'Refresh history',
-                      onPressed: _reload,
+                      onPressed: () => unawaited(_reload()),
                       icon: const Icon(Icons.refresh),
                     ),
                   ],
@@ -93,51 +135,77 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 const Text(
                   'Revisit what you said, what worked, and what to try next.',
                 ),
+                if (_error != null && _items.isNotEmpty) ...<Widget>[
+                  const SizedBox(height: 12),
+                  Text(
+                    _error!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
                 Expanded(
-                  child: FutureBuilder<ConversationPage>(
-                    future: _future,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState != ConnectionState.done) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError || !snapshot.hasData) {
-                        return Center(
-                          child: ErrorPanel(
-                            message: friendlyError(
-                              snapshot.error ?? 'History unavailable.',
-                            ),
-                            onRetry: _reload,
-                          ),
-                        );
-                      }
-                      final items = snapshot.requireData.items;
-                      if (items.isEmpty) return const _EmptyHistory();
-                      return ListView.separated(
-                        itemCount: items.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final item = items[index];
-                          return _ConversationCard(
-                            conversation: item,
-                            deleting: _deletingId == item.id,
-                            onDelete: () => _delete(item),
-                            onOpen: () async {
-                              await Navigator.of(context).push<void>(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => ConversationDetailScreen(
-                                    conversationId: item.id,
-                                    repository: widget.repository,
+                  child: _loading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error != null && _items.isEmpty
+                          ? Center(
+                              child: ErrorPanel(
+                                message: _error!,
+                                onRetry: () => unawaited(_reload()),
+                              ),
+                            )
+                          : _items.isEmpty
+                              ? const _EmptyHistory()
+                              : RefreshIndicator(
+                                  onRefresh: _reload,
+                                  child: ListView.separated(
+                                    itemCount: _items.length +
+                                        (_nextCursor == null ? 0 : 1),
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 12),
+                                    itemBuilder: (context, index) {
+                                      if (index == _items.length) {
+                                        return Center(
+                                          child: OutlinedButton.icon(
+                                            onPressed: _loadingMore
+                                                ? null
+                                                : () => unawaited(_load()),
+                                            icon: _loadingMore
+                                                ? const SizedBox.square(
+                                                    dimension: 16,
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                                  )
+                                                : const Icon(Icons.expand_more),
+                                            label: const Text('Load more'),
+                                          ),
+                                        );
+                                      }
+                                      final item = _items[index];
+                                      return _ConversationCard(
+                                        conversation: item,
+                                        deleting: _deletingId == item.id,
+                                        onDelete: () => _delete(item),
+                                        onOpen: () async {
+                                          await Navigator.of(context)
+                                              .push<void>(
+                                            MaterialPageRoute<void>(
+                                              builder: (_) =>
+                                                  ConversationDetailScreen(
+                                                conversationId: item.id,
+                                                repository: widget.repository,
+                                              ),
+                                            ),
+                                          );
+                                          if (mounted) await _reload();
+                                        },
+                                      );
+                                    },
                                   ),
                                 ),
-                              );
-                              _reload();
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
                 ),
               ],
             ),
@@ -392,7 +460,13 @@ class _DetailContent extends StatelessWidget {
             ),
           )
         else
-          ...detail.turns.map((turn) => _TranscriptTurn(turn: turn)),
+          ...detail.turns.map(
+            (turn) => TranscriptBubble(
+              role: turn.role,
+              text: turn.text,
+              compact: true,
+            ),
+          ),
       ],
     );
   }
@@ -521,30 +595,4 @@ class _Bullet extends StatelessWidget {
           ],
         ),
       );
-}
-
-class _TranscriptTurn extends StatelessWidget {
-  const _TranscriptTurn({required this.turn});
-  final ConversationTurn turn;
-
-  @override
-  Widget build(BuildContext context) {
-    final user = turn.role == TurnRole.user;
-    return Align(
-      alignment: user ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 580),
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 13),
-        decoration: BoxDecoration(
-          color: user ? NiaColors.evergreen : NiaColors.white,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Text(
-          turn.text,
-          style: TextStyle(color: user ? NiaColors.white : NiaColors.ink),
-        ),
-      ),
-    );
-  }
 }

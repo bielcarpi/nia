@@ -44,12 +44,12 @@ void main() {
 
     await tester.enterText(
       find.byType(TextField).last,
-      'Me gusta descubrir cafés nuevos.',
+      'Yo soy bien.',
     );
     await tester.tap(find.byTooltip('Send message'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.textContaining('Muy bien'), findsOneWidget);
+    expect(find.textContaining('Estoy bien.'), findsOneWidget);
 
     await tester.tap(find.text('Finish'));
     await tester.pumpAndSettle();

@@ -16,16 +16,19 @@ class AppConfig {
       'NIA_LOCAL_STACK',
       defaultValue: false,
     );
-    const apiBaseUrl = String.fromEnvironment(
-      'NIA_API_BASE_URL',
-      defaultValue: 'http://localhost:8080',
-    );
+    const apiBaseUrl = String.fromEnvironment('NIA_API_BASE_URL');
+
+    validateModeCombination(demoMode: demoMode, localStack: localStack);
 
     if (demoMode) {
       return AppConfig(
         demoMode: true,
         localStack: localStack,
-        apiBaseUrl: Uri.parse(apiBaseUrl),
+        apiBaseUrl: parseApiBaseUrl(
+          apiBaseUrl,
+          production: false,
+          localStack: localStack,
+        ),
       );
     }
 
@@ -41,6 +44,7 @@ class AppConfig {
     );
 
     final missing = <String>[
+      if (apiBaseUrl.isEmpty) 'NIA_API_BASE_URL',
       if (apiKey.isEmpty) 'NIA_FIREBASE_API_KEY',
       if (appId.isEmpty) 'NIA_FIREBASE_APP_ID',
       if (messagingSenderId.isEmpty) 'NIA_FIREBASE_MESSAGING_SENDER_ID',
@@ -57,7 +61,7 @@ class AppConfig {
     return AppConfig(
       demoMode: false,
       localStack: false,
-      apiBaseUrl: Uri.parse(apiBaseUrl),
+      apiBaseUrl: parseApiBaseUrl(apiBaseUrl, production: true),
       recaptchaSiteKey: recaptchaSiteKey,
       firebaseOptions: FirebaseOptions(
         apiKey: apiKey,
@@ -74,4 +78,57 @@ class AppConfig {
   final Uri apiBaseUrl;
   final FirebaseOptions? firebaseOptions;
   final String? recaptchaSiteKey;
+
+  bool get offlineDemo => demoMode && !localStack;
+  bool get production => !demoMode;
+
+  static void validateModeCombination({
+    required bool demoMode,
+    required bool localStack,
+  }) {
+    if (localStack && !demoMode) {
+      throw StateError(
+        'NIA_LOCAL_STACK requires NIA_DEMO_MODE=true. Production mode cannot '
+        'use local demo authentication.',
+      );
+    }
+  }
+
+  static Uri parseApiBaseUrl(
+    String value, {
+    required bool production,
+    bool localStack = false,
+  }) {
+    final candidate = value.trim().isEmpty && !production
+        ? 'http://localhost:8080'
+        : value.trim();
+    final uri = Uri.tryParse(candidate);
+    final validHttpUri = uri != null &&
+        uri.hasScheme &&
+        uri.host.isNotEmpty &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.userInfo.isEmpty &&
+        (uri.path.isEmpty || uri.path == '/') &&
+        uri.query.isEmpty &&
+        uri.fragment.isEmpty;
+    if (!validHttpUri) {
+      throw StateError(
+        'NIA_API_BASE_URL must be an absolute HTTP(S) origin without a path, '
+        'credentials, query, or fragment.',
+      );
+    }
+    if (production && uri.scheme != 'https') {
+      throw StateError('Production NIA_API_BASE_URL must use HTTPS.');
+    }
+    if (production &&
+        (uri.host == 'localhost' ||
+            uri.host == '127.0.0.1' ||
+            uri.host == '::1')) {
+      throw StateError('Production NIA_API_BASE_URL cannot target localhost.');
+    }
+    if (localStack && production) {
+      throw StateError('Local-stack and production modes cannot be combined.');
+    }
+    return uri;
+  }
 }

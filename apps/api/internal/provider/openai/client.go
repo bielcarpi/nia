@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/bielcarpi/nia/apps/api/internal/domain"
+	"github.com/bielcarpi/nia/apps/api/internal/requestmeta"
 )
 
 const maxProviderResponseBytes = 1 << 20
@@ -223,6 +224,9 @@ func (c *Client) doJSON(ctx context.Context, method, path, uid string, payload, 
 			"provider_status", statusCode,
 			"outcome", outcome,
 			"duration_ms", time.Since(started).Milliseconds(),
+		}
+		if id := requestmeta.RequestID(ctx); id != "" {
+			attributes = append(attributes, "request_id", id)
 		}
 		if resultErr != nil {
 			c.logger.WarnContext(ctx, "provider request", attributes...)

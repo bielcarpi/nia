@@ -17,6 +17,7 @@ import (
 
 	"github.com/bielcarpi/nia/apps/api/internal/auth"
 	"github.com/bielcarpi/nia/apps/api/internal/domain"
+	"github.com/bielcarpi/nia/apps/api/internal/requestmeta"
 )
 
 type Application interface {
@@ -74,14 +75,14 @@ func (a *API) routes() http.Handler {
 	protected.HandleFunc("DELETE /api/v1/conversations/{conversation_id}", a.deleteConversation)
 	protected.HandleFunc("PUT /api/v1/conversations/{conversation_id}/turns/{turn_id}", a.upsertTurn)
 	protected.HandleFunc("POST /api/v1/conversations/{conversation_id}/complete", a.completeConversation)
-	root.Handle("/api/v1/", a.authenticate(a.captureRoute(protected)))
+	protectedHandler := a.authenticate(a.captureRoute(protected))
+	root.Handle("/api/v1/", a.concurrencyLimit(protectedHandler))
 
 	var handler http.Handler = a.captureRoute(root)
 	handler = a.requestTimeout(handler)
-	handler = a.concurrencyLimit(handler)
 	handler = a.bodyLimit(handler)
-	handler = a.accessLog(handler)
 	handler = a.cors(handler)
+	handler = a.accessLog(handler)
 	handler = securityHeaders(handler)
 	handler = a.recoverPanic(handler)
 	handler = requestID(handler)
@@ -238,10 +239,12 @@ func writeJSON(response http.ResponseWriter, statusCode int, value any) {
 
 func writeError(response http.ResponseWriter, request *http.Request, err error) {
 	public := domain.AsPublicError(err)
-	requestID := requestIDFromContext(request.Context())
-	if public.Status == http.StatusTooManyRequests {
-		response.Header().Set("Retry-After", "60")
+	if recorder, ok := response.(interface {
+		setError(string, string, bool)
+	}); ok {
+		recorder.setError(public.Code, classifyError(public), public.Retryable)
 	}
+	requestID := requestIDFromContext(request.Context())
 	writeJSON(response, public.Status, map[string]any{
 		"error": map[string]string{
 			"code":       public.Code,
@@ -249,6 +252,25 @@ func writeError(response http.ResponseWriter, request *http.Request, err error) 
 			"request_id": requestID,
 		},
 	})
+}
+
+func classifyError(public *domain.PublicError) string {
+	switch {
+	case public.Code == "invalid_request" || public.Code == "origin_not_allowed":
+		return "client"
+	case public.Code == "unauthorized":
+		return "identity"
+	case public.Code == "not_found" || public.Code == "conflict":
+		return "lifecycle"
+	case public.Code == "rate_limited" || public.Code == "server_busy":
+		return "capacity"
+	case public.Code == "not_ready":
+		return "dependency"
+	case strings.HasPrefix(public.Code, "provider_"):
+		return "provider"
+	default:
+		return "internal"
+	}
 }
 
 func identityUID(request *http.Request) string {
@@ -306,8 +328,11 @@ func (a *API) requestTimeout(next http.Handler) http.Handler {
 
 type responseRecorder struct {
 	http.ResponseWriter
-	status int
-	route  string
+	status     int
+	route      string
+	errorCode  string
+	errorClass string
+	retryable  bool
 }
 
 func (r *responseRecorder) WriteHeader(status int) {
@@ -328,6 +353,12 @@ func (r *responseRecorder) setRoute(pattern string) {
 	if len(pattern) > len(r.route) {
 		r.route = pattern
 	}
+}
+
+func (r *responseRecorder) setError(code, class string, retryable bool) {
+	r.errorCode = code
+	r.errorClass = class
+	r.retryable = retryable
 }
 
 func (a *API) captureRoute(next http.Handler) http.Handler {
@@ -352,13 +383,21 @@ func (a *API) accessLog(next http.Handler) http.Handler {
 		if route == "" {
 			route = "unmatched"
 		}
-		a.logger.InfoContext(request.Context(), "http request",
+		attributes := []any{
 			"request_id", requestIDFromContext(request.Context()),
 			"method", request.Method,
 			"route", route,
 			"status", statusCode,
 			"duration_ms", time.Since(started).Milliseconds(),
-		)
+		}
+		if recorder.errorCode != "" {
+			attributes = append(attributes,
+				"error_code", recorder.errorCode,
+				"error_class", recorder.errorClass,
+				"retryable", recorder.retryable,
+			)
+		}
+		a.logger.InfoContext(request.Context(), "http request", attributes...)
 	})
 }
 
@@ -401,7 +440,7 @@ func (a *API) cors(next http.Handler) http.Handler {
 			response.Header().Set("Vary", "Origin")
 			response.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Firebase-AppCheck, X-Request-ID")
 			response.Header().Set("Access-Control-Allow-Methods", "GET, PATCH, POST, PUT, DELETE, OPTIONS")
-			response.Header().Set("Access-Control-Expose-Headers", "X-Request-ID, Retry-After")
+			response.Header().Set("Access-Control-Expose-Headers", "X-Request-ID")
 			response.Header().Set("Access-Control-Max-Age", "600")
 		}
 		if request.Method == http.MethodOptions {
@@ -411,8 +450,6 @@ func (a *API) cors(next http.Handler) http.Handler {
 		next.ServeHTTP(response, request)
 	})
 }
-
-type requestIDKey struct{}
 
 var validRequestID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{7,127}$`)
 
@@ -428,12 +465,11 @@ func requestID(next http.Handler) http.Handler {
 			}
 		}
 		response.Header().Set("X-Request-ID", id)
-		ctx := context.WithValue(request.Context(), requestIDKey{}, id)
+		ctx := requestmeta.WithRequestID(request.Context(), id)
 		next.ServeHTTP(response, request.WithContext(ctx))
 	})
 }
 
 func requestIDFromContext(ctx context.Context) string {
-	id, _ := ctx.Value(requestIDKey{}).(string)
-	return id
+	return requestmeta.RequestID(ctx)
 }

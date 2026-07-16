@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	EnvironmentLocal      = "local"
-	EnvironmentProduction = "production"
+	EnvironmentLocal            = "local"
+	EnvironmentProduction       = "production"
+	officialRealtimeSDPEndpoint = "https://api.openai.com/v1/realtime/calls"
 )
 
 type Config struct {
@@ -37,6 +38,7 @@ type Config struct {
 	MaxConcurrentRequests int
 	SessionLimitPerHour   int
 	FeedbackLimitPerHour  int
+	TurnLimitPerMinute    int
 	LogLevel              string
 }
 
@@ -61,7 +63,7 @@ func LoadFrom(lookup func(string) (string, bool)) (Config, error) {
 		RealtimeVoice:         value(lookup, "NIA_REALTIME_VOICE", "marin"),
 		TranscriptionModel:    value(lookup, "NIA_TRANSCRIPTION_MODEL", "gpt-4o-mini-transcribe"),
 		FeedbackModel:         value(lookup, "NIA_FEEDBACK_MODEL", "gpt-5.6-terra"),
-		RealtimeSDPEndpoint:   value(lookup, "NIA_REALTIME_SDP_ENDPOINT", "https://api.openai.com/v1/realtime/calls"),
+		RealtimeSDPEndpoint:   value(lookup, "NIA_REALTIME_SDP_ENDPOINT", officialRealtimeSDPEndpoint),
 		RealtimeTTL:           durationValue(lookup, "NIA_REALTIME_TTL", 10*time.Minute),
 		ProviderTimeout:       durationValue(lookup, "NIA_PROVIDER_TIMEOUT", 15*time.Second),
 		RequestTimeout:        durationValue(lookup, "NIA_REQUEST_TIMEOUT", 30*time.Second),
@@ -69,6 +71,7 @@ func LoadFrom(lookup func(string) (string, bool)) (Config, error) {
 		MaxConcurrentRequests: intValue(lookup, "NIA_MAX_CONCURRENT_REQUESTS", 64),
 		SessionLimitPerHour:   intValue(lookup, "NIA_SESSION_LIMIT_PER_HOUR", 12),
 		FeedbackLimitPerHour:  intValue(lookup, "NIA_FEEDBACK_LIMIT_PER_HOUR", 12),
+		TurnLimitPerMinute:    intValue(lookup, "NIA_TURN_LIMIT_PER_MINUTE", 120),
 		LogLevel:              value(lookup, "NIA_LOG_LEVEL", "info"),
 	}
 	if err := config.Validate(); err != nil {
@@ -90,8 +93,8 @@ func (c Config) Validate() error {
 	if c.MaxConcurrentRequests < 1 || c.MaxConcurrentRequests > 1000 {
 		return fmt.Errorf("NIA_MAX_CONCURRENT_REQUESTS must be between 1 and 1000")
 	}
-	if c.SessionLimitPerHour < 1 || c.FeedbackLimitPerHour < 1 {
-		return fmt.Errorf("per-hour limits must be positive")
+	if c.SessionLimitPerHour < 1 || c.FeedbackLimitPerHour < 1 || c.TurnLimitPerMinute < 1 {
+		return fmt.Errorf("session, feedback, and turn limits must be positive")
 	}
 	if c.RequestTimeout < time.Second || c.ProviderTimeout < time.Second {
 		return fmt.Errorf("request and provider timeouts must be at least one second")
@@ -99,7 +102,8 @@ func (c Config) Validate() error {
 	if c.RealtimeTTL < time.Minute || c.RealtimeTTL > time.Hour {
 		return fmt.Errorf("NIA_REALTIME_TTL must be between 1m and 1h")
 	}
-	if _, err := validatedHTTPURL(c.RealtimeSDPEndpoint); err != nil {
+	sdpEndpoint, err := validatedHTTPURL(c.RealtimeSDPEndpoint)
+	if err != nil {
 		return fmt.Errorf("NIA_REALTIME_SDP_ENDPOINT: %w", err)
 	}
 	baseURL, err := validatedHTTPURL(c.OpenAIBaseURL)
@@ -108,7 +112,7 @@ func (c Config) Validate() error {
 	}
 	for _, origin := range c.AllowedOrigins {
 		parsed, err := validatedHTTPURL(origin)
-		if err != nil || parsed.Path != "" && parsed.Path != "/" || strings.Contains(origin, "*") {
+		if err != nil || parsed.Path != "" || parsed.RawQuery != "" || parsed.Fragment != "" || strings.Contains(origin, "*") {
 			return fmt.Errorf("NIA_ALLOWED_ORIGINS contains invalid exact origin %q", origin)
 		}
 		if c.Environment == EnvironmentProduction && parsed.Scheme != "https" {
@@ -133,6 +137,9 @@ func (c Config) Validate() error {
 		}
 		if baseURL.String() != "https://api.openai.com/v1" {
 			return fmt.Errorf("production NIA_OPENAI_BASE_URL must be https://api.openai.com/v1")
+		}
+		if sdpEndpoint.String() != officialRealtimeSDPEndpoint {
+			return fmt.Errorf("production NIA_REALTIME_SDP_ENDPOINT must be %s", officialRealtimeSDPEndpoint)
 		}
 	}
 	if c.Environment == EnvironmentLocal {

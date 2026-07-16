@@ -4,16 +4,18 @@ info:
   version: 2.0.0
   summary: Control-plane API for Nia's realtime language tutor
   description: |
-    Nia's API authenticates learners, owns tutor policy, issues short-lived
-    OpenAI Realtime client secrets, stores text turns, and creates post-session
-    feedback. Audio travels directly between the client and OpenAI over WebRTC;
-    it is not uploaded to this API.
+    Nia's API authenticates learners, supplies initial tutor settings, issues
+    short-lived OpenAI Realtime client secrets, stores text turns, and creates
+    post-session feedback. Audio travels directly between the client and OpenAI
+    over WebRTC; it is not uploaded to this API. A connected direct client can
+    update its provider session, so initial tutor settings are not an immutable
+    authorization boundary.
 servers:
   - url: http://localhost:8080
     description: Local development
 tags:
   - name: System
-    description: Process health and dependency readiness
+    description: Process health and persistence readiness
   - name: Profile
     description: Learner preferences
   - name: Realtime
@@ -48,12 +50,12 @@ paths:
     get:
       tags: [System]
       operationId: getReadiness
-      summary: Check dependency readiness
-      description: Dependency check used by startup probes, smoke tests, and operators.
+      summary: Check persistence readiness
+      description: Cheap storage check used by startup probes. The authenticated smoke flow verifies identity, App Check, and provider access separately.
       security: []
       responses:
         '200':
-          description: Required dependencies are ready.
+          description: Persistence is ready.
           headers:
             X-Request-ID:
               $ref: '#/components/headers/RequestID'
@@ -82,6 +84,8 @@ paths:
                 $ref: '#/components/schemas/Preferences'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/Unavailable'
         '500':
           $ref: '#/components/responses/InternalError'
     patch:
@@ -108,6 +112,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/Unavailable'
         '500':
           $ref: '#/components/responses/InternalError'
   /api/v1/realtime/sessions:
@@ -125,6 +131,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateRealtimeSessionRequest'
+            example:
+              preferences:
+                target_language: es
+                level: intermediate
+                topic: Ordering dinner at a restaurant
+                correction_style: summary
       responses:
         '201':
           description: Realtime session created.
@@ -135,6 +147,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateRealtimeSessionResponse'
+              examples:
+                localDemo:
+                  summary: Credential-free local session
+                  value:
+                    conversation:
+                      id: conv_01JNA6HF7BP6KS7X1Q43KM9N33
+                      status: active
+                      preferences:
+                        target_language: es
+                        level: intermediate
+                        topic: Ordering dinner at a restaurant
+                        correction_style: summary
+                      turn_count: 0
+                      created_at: '2026-07-16T09:00:00Z'
+                      updated_at: '2026-07-16T09:00:00Z'
+                    client_secret: null
+                    realtime:
+                      transport: demo
+                      endpoint: demo://local
+                      model: deterministic-demo
+                productionWebRTC:
+                  summary: Production WebRTC bootstrap
+                  value:
+                    conversation:
+                      id: conv_01JNA6HF7BP6KS7X1Q43KM9N34
+                      status: active
+                      preferences:
+                        target_language: es
+                        level: intermediate
+                        topic: Ordering dinner at a restaurant
+                        correction_style: summary
+                      turn_count: 0
+                      created_at: '2026-07-16T09:00:00Z'
+                      updated_at: '2026-07-16T09:00:00Z'
+                    client_secret:
+                      value: ephemeral-example-value
+                      expires_at: 1784193000
+                    realtime:
+                      transport: webrtc
+                      endpoint: https://api.openai.com/v1/realtime/calls
+                      model: gpt-realtime-2.1
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -169,6 +222,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '503':
+          $ref: '#/components/responses/Unavailable'
         '500':
           $ref: '#/components/responses/InternalError'
   /api/v1/conversations/{conversation_id}:
@@ -188,17 +243,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConversationDetail'
+              examples:
+                demoFeedback:
+                  summary: Completed local demo conversation
+                  value:
+                    conversation:
+                      id: conv_01JNA6HF7BP6KS7X1Q43KM9N33
+                      status: completed
+                      preferences:
+                        target_language: es
+                        level: intermediate
+                        topic: Ordering dinner at a restaurant
+                        correction_style: summary
+                      turn_count: 2
+                      created_at: '2026-07-16T09:00:00Z'
+                      updated_at: '2026-07-16T09:05:00Z'
+                    turns:
+                      - id: turn_demo_0001
+                        role: user
+                        text: Yo soy bien y quiero una mesa para dos.
+                        occurred_at: '2026-07-16T09:00:00Z'
+                      - id: turn_demo_0002
+                        role: assistant
+                        text: 'Una corrección: en este caso, di “Estoy bien”.'
+                        occurred_at: '2026-07-16T09:00:02Z'
+                    feedback:
+                      summary: You completed 1 Spanish learner turn about Ordering dinner at a restaurant.
+                      strengths:
+                        - You kept the exchange moving for 1 learner turn.
+                        - 'Your latest idea was specific: “Yo soy bien.”'
+                      corrections:
+                        - original: Yo soy bien.
+                          corrected: Estoy bien.
+                          explanation: Use “estar” for a temporary state or feeling.
+                      next_steps:
+                        - Responde otra vez añadiendo cuándo, dónde y por qué.
+                        - Practica una pregunta de seguimiento sobre ordering dinner at a restaurant.
+                      generated_at: '2026-07-16T09:05:00Z'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '503':
+          $ref: '#/components/responses/Unavailable'
         '500':
           $ref: '#/components/responses/InternalError'
     delete:
       tags: [Conversations]
       operationId: deleteConversation
       summary: Delete a conversation
-      description: Permanently deletes the transcript and generated feedback.
+      description: |
+        Makes the conversation unavailable immediately, then removes its live
+        transcript and generated feedback. Cloud backups, point-in-time recovery,
+        and external processors remain subject to the operator's retention policy.
       responses:
         '204':
           description: Conversation deleted.
@@ -209,6 +306,10 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '503':
+          $ref: '#/components/responses/Unavailable'
         '500':
           $ref: '#/components/responses/InternalError'
   /api/v1/conversations/{conversation_id}/turns/{turn_id}:
@@ -219,7 +320,11 @@ paths:
       tags: [Conversations]
       operationId: upsertConversationTurn
       summary: Store a transcript turn idempotently
-      description: Reusing a turn ID replaces that turn instead of duplicating it.
+      description: |
+        Reusing a turn ID replaces that turn instead of duplicating it. New
+        turns are accepted for two hours after conversation creation and each
+        conversation is capped atomically at 200 turns. Existing IDs remain
+        retryable at the cap.
       requestBody:
         required: true
         content:
@@ -244,6 +349,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/Unavailable'
         '500':
           $ref: '#/components/responses/InternalError'
   /api/v1/conversations/{conversation_id}/complete:
@@ -256,7 +365,9 @@ paths:
       description: |
         Requires at least one stored learner/user turn. An assistant greeting by
         itself cannot be completed or consume feedback-generation quota. The
-        operation is idempotent after feedback has been generated successfully.
+        operation is idempotent after feedback has been persisted successfully.
+        While feedback generation or deletion owns the conversation lease, the
+        API returns a retryable conflict.
       responses:
         '200':
           description: Completed conversation with feedback.
@@ -272,7 +383,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
         '409':
-          $ref: '#/components/responses/ConversationNotReady'
+          $ref: '#/components/responses/Conflict'
         '429':
           $ref: '#/components/responses/RateLimited'
         '502':
@@ -306,12 +417,6 @@ components:
         minLength: 8
         maxLength: 128
         example: 01JNA6HF7BP6KS7X1Q43KM9N33
-    RetryAfter:
-      description: Seconds before another request should be attempted.
-      schema:
-        type: integer
-        minimum: 1
-        example: 30
   parameters:
     ConversationID:
       name: conversation_id
@@ -383,22 +488,11 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
-    ConversationNotReady:
-      description: No learner/user turn has been stored, so the conversation cannot be completed.
-      headers:
-        X-Request-ID:
-          $ref: '#/components/headers/RequestID'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
     RateLimited:
-      description: The learner exceeded a rate or concurrency limit.
+      description: The learner exceeded a configured request-rate limit.
       headers:
         X-Request-ID:
           $ref: '#/components/headers/RequestID'
-        Retry-After:
-          $ref: '#/components/headers/RetryAfter'
       content:
         application/json:
           schema:
@@ -550,6 +644,7 @@ components:
         turn_count:
           type: integer
           minimum: 0
+          maximum: 200
           default: 0
         created_at:
           type: string
@@ -670,6 +765,11 @@ components:
       type: object
       additionalProperties: false
       required: [error]
+      example:
+        error:
+          code: invalid_request
+          message: target_language must be one of en, es, or ca
+          request_id: 01JNA6HF7BP6KS7X1Q43KM9N33
       properties:
         error:
           $ref: '#/components/schemas/APIError'

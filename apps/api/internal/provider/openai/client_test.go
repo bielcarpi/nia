@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/bielcarpi/nia/apps/api/internal/domain"
+	"github.com/bielcarpi/nia/apps/api/internal/requestmeta"
 )
 
 func TestIssueBuildsBoundedRealtimeSession(t *testing.T) {
@@ -111,12 +112,13 @@ func TestProviderLogsRequestCorrelationWithoutPayloads(t *testing.T) {
 	var logs bytes.Buffer
 	logger := slog.New(slog.NewJSONHandler(&logs, nil))
 	client := newTestClient(t, server.URL, logger)
-	if _, err := client.Issue(context.Background(), "private-user-id", domain.DefaultPreferences()); err != nil {
+	ctx := requestmeta.WithRequestID(context.Background(), "nia-request-safe")
+	if _, err := client.Issue(ctx, "private-user-id", domain.DefaultPreferences()); err != nil {
 		t.Fatalf("Issue() error = %v", err)
 	}
 
 	output := logs.String()
-	if !strings.Contains(output, `"provider_request_id":"provider-request-safe"`) || !strings.Contains(output, `"operation":"realtime/client_secrets"`) {
+	if !strings.Contains(output, `"provider_request_id":"provider-request-safe"`) || !strings.Contains(output, `"request_id":"nia-request-safe"`) || !strings.Contains(output, `"operation":"realtime/client_secrets"`) {
 		t.Fatalf("missing provider correlation metadata: %s", output)
 	}
 	if strings.Contains(output, "credential-that-must-not-be-logged") || strings.Contains(output, "private-user-id") {

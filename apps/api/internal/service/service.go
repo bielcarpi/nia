@@ -18,6 +18,8 @@ type Service struct {
 	realtime        domain.RealtimeConnection
 	sessionLimiter  *WindowLimiter
 	feedbackLimiter *WindowLimiter
+	turnLimiter     *WindowLimiter
+	completionLease time.Duration
 	now             func() time.Time
 }
 
@@ -28,6 +30,8 @@ type Options struct {
 	Realtime             domain.RealtimeConnection
 	SessionLimitPerHour  int
 	FeedbackLimitPerHour int
+	TurnLimitPerMinute   int
+	CompletionLease      time.Duration
 }
 
 func New(options Options) (*Service, error) {
@@ -37,6 +41,14 @@ func New(options Options) (*Service, error) {
 	if options.Realtime.Transport != domain.TransportDemo && options.Realtime.Transport != domain.TransportWebRTC {
 		return nil, fmt.Errorf("unsupported realtime transport %q", options.Realtime.Transport)
 	}
+	completionLease := options.CompletionLease
+	if completionLease <= 0 {
+		completionLease = 2 * time.Minute
+	}
+	turnLimitPerMinute := options.TurnLimitPerMinute
+	if turnLimitPerMinute <= 0 {
+		turnLimitPerMinute = 120
+	}
 	return &Service{
 		store:           options.Store,
 		issuer:          options.Issuer,
@@ -44,6 +56,8 @@ func New(options Options) (*Service, error) {
 		realtime:        options.Realtime,
 		sessionLimiter:  NewWindowLimiter(options.SessionLimitPerHour, time.Hour),
 		feedbackLimiter: NewWindowLimiter(options.FeedbackLimitPerHour, time.Hour),
+		turnLimiter:     NewWindowLimiter(turnLimitPerMinute, time.Minute),
+		completionLease: completionLease,
 		now:             time.Now,
 	}, nil
 }
@@ -136,6 +150,9 @@ func (s *Service) UpsertTurn(ctx context.Context, uid, conversationID string, tu
 	if err := turn.Validate(); err != nil {
 		return domain.Turn{}, err
 	}
+	if !s.turnLimiter.Allow(uid) {
+		return domain.Turn{}, domain.RateLimited()
+	}
 	return s.store.UpsertTurn(ctx, uid, conversationID, turn)
 }
 
@@ -143,13 +160,29 @@ func (s *Service) CompleteConversation(ctx context.Context, uid, id string) (dom
 	if err := validateID("conversation_id", id); err != nil {
 		return domain.ConversationDetail{}, err
 	}
-	detail, err := s.store.GetConversation(ctx, uid, id)
+	startedAt := s.now().UTC()
+	lease := domain.CompletionLease{
+		ID:        newID("lease_"),
+		StartedAt: startedAt,
+		ExpiresAt: startedAt.Add(s.completionLease),
+	}
+	detail, claimed, err := s.store.ClaimConversationCompletion(ctx, uid, id, lease)
 	if err != nil {
 		return domain.ConversationDetail{}, err
 	}
-	if detail.Feedback != nil && detail.Conversation.Status == domain.StatusCompleted {
+	if !claimed {
 		return detail, nil
 	}
+	releaseLease := true
+	defer func() {
+		if !releaseLease {
+			return
+		}
+		releaseCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Second)
+		defer cancel()
+		_ = s.store.ReleaseConversationCompletion(releaseCtx, uid, id, lease.ID)
+	}()
+
 	hasLearnerTurn := false
 	for _, turn := range detail.Turns {
 		if turn.Role == "user" {
@@ -170,7 +203,12 @@ func (s *Service) CompleteConversation(ctx context.Context, uid, id string) (dom
 	if feedback.GeneratedAt.IsZero() {
 		feedback.GeneratedAt = s.now().UTC()
 	}
-	return s.store.CompleteConversation(ctx, uid, id, feedback)
+	// Once the provider has returned, do not release the lease on a persistence
+	// failure. Let it expire instead so an immediate retry cannot spend twice.
+	releaseLease = false
+	persistCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	defer cancel()
+	return s.store.CompleteConversation(persistCtx, uid, id, lease.ID, feedback)
 }
 
 func (s *Service) DeleteConversation(ctx context.Context, uid, id string) error {

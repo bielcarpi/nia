@@ -2,7 +2,9 @@ package httpapi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -14,6 +16,7 @@ import (
 	"github.com/bielcarpi/nia/apps/api/internal/auth"
 	"github.com/bielcarpi/nia/apps/api/internal/domain"
 	"github.com/bielcarpi/nia/apps/api/internal/provider/demo"
+	"github.com/bielcarpi/nia/apps/api/internal/requestmeta"
 	"github.com/bielcarpi/nia/apps/api/internal/service"
 	"github.com/bielcarpi/nia/apps/api/internal/store/memory"
 )
@@ -153,6 +156,133 @@ func TestAccessLogUsesRouteTemplate(t *testing.T) {
 	}
 	if !strings.Contains(output, `"route":"GET /api/v1/conversations/{conversation_id}"`) {
 		t.Fatalf("access log does not contain the route template: %s", output)
+	}
+	if !strings.Contains(output, `"error_code":"not_found"`) || !strings.Contains(output, `"error_class":"lifecycle"`) {
+		t.Fatalf("access log does not contain sanitized error metadata: %s", output)
+	}
+}
+
+func TestAccessLogNeverIncludesInternalErrorCause(t *testing.T) {
+	var logs bytes.Buffer
+	api := &API{logger: slog.New(slog.NewJSONHandler(&logs, nil))}
+	const sensitive = "raw provider response and transcript"
+	handler := requestID(api.accessLog(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		writeError(response, request, domain.ProviderUnavailable(errors.New(sensitive)))
+	})))
+
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequest(http.MethodPost, "/api/v1/test", nil))
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("response status = %d", response.Code)
+	}
+	output := logs.String()
+	if strings.Contains(output, sensitive) {
+		t.Fatalf("access log leaked the internal cause: %s", output)
+	}
+	for _, field := range []string{`"error_code":"provider_unavailable"`, `"error_class":"provider"`, `"retryable":true`} {
+		if !strings.Contains(output, field) {
+			t.Fatalf("access log missing %s: %s", field, output)
+		}
+	}
+}
+
+func TestRateLimitDoesNotInventRetryDelay(t *testing.T) {
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/test", nil)
+	request = request.WithContext(requestmeta.WithRequestID(request.Context(), "nia-request-rate-limit"))
+	writeError(response, request, domain.RateLimited())
+	if response.Code != http.StatusTooManyRequests {
+		t.Fatalf("response status = %d", response.Code)
+	}
+	if delay := response.Header().Get("Retry-After"); delay != "" {
+		t.Fatalf("fabricated Retry-After = %q", delay)
+	}
+}
+
+type blockingApplication struct {
+	Application
+	started chan struct{}
+	release chan struct{}
+}
+
+func (a *blockingApplication) GetPreferences(ctx context.Context, _ string) (domain.Preferences, error) {
+	select {
+	case a.started <- struct{}{}:
+	default:
+	}
+	select {
+	case <-a.release:
+		return domain.DefaultPreferences(), nil
+	case <-ctx.Done():
+		return domain.Preferences{}, ctx.Err()
+	}
+}
+
+func TestHealthAndReadinessBypassApplicationConcurrencyLimit(t *testing.T) {
+	application, err := service.New(service.Options{
+		Store: memory.New(), Issuer: demo.RealtimeIssuer{}, Feedback: demo.FeedbackGenerator{},
+		Realtime: domain.RealtimeConnection{Transport: domain.TransportDemo, Endpoint: "demo://local", Model: "deterministic-demo"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	blocking := &blockingApplication{Application: application, started: make(chan struct{}, 1), release: make(chan struct{})}
+	api, err := New(blocking, auth.DemoVerifier{}, slog.New(slog.NewJSONHandler(io.Discard, nil)), Config{
+		AllowedOrigins: []string{"http://localhost:3000"}, MaxRequestBodyBytes: 64 << 10,
+		MaxConcurrentRequests: 1, RequestTimeout: 5 * time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	server := httptest.NewServer(api.Handler())
+	defer server.Close()
+	firstDone := make(chan *http.Response, 1)
+	firstError := make(chan error, 1)
+	go func() {
+		request, requestErr := http.NewRequest(http.MethodGet, server.URL+"/api/v1/me/preferences", nil)
+		if requestErr == nil {
+			request.Header.Set("Authorization", "Bearer nia-local-demo")
+		}
+		if requestErr != nil {
+			firstError <- requestErr
+			return
+		}
+		response, requestErr := server.Client().Do(request)
+		if requestErr != nil {
+			firstError <- requestErr
+			return
+		}
+		firstDone <- response
+	}()
+	select {
+	case <-blocking.started:
+	case <-time.After(time.Second):
+		t.Fatal("first request did not occupy the application slot")
+	}
+
+	for _, path := range []string{"/healthz", "/readyz"} {
+		response := request(t, server, http.MethodGet, path, nil, "")
+		if response.StatusCode != http.StatusOK {
+			t.Fatalf("%s status under saturation = %d", path, response.StatusCode)
+		}
+		closeBody(response)
+	}
+	busy := request(t, server, http.MethodGet, "/api/v1/me/preferences", nil, "nia-local-demo")
+	if busy.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("second application request status = %d", busy.StatusCode)
+	}
+	closeBody(busy)
+	close(blocking.release)
+	select {
+	case response := <-firstDone:
+		if response.StatusCode != http.StatusOK {
+			t.Fatalf("first request status = %d", response.StatusCode)
+		}
+		closeBody(response)
+	case err := <-firstError:
+		t.Fatal(err)
+	case <-time.After(time.Second):
+		t.Fatal("first request did not finish")
 	}
 }
 

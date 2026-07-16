@@ -14,11 +14,12 @@ type windowEntry struct {
 // max-instance setting and the OpenAI project budget remain the distributed
 // backstops; a distributed limiter can replace this interface if usage demands it.
 type WindowLimiter struct {
-	mu      sync.Mutex
-	limit   int
-	window  time.Duration
-	now     func() time.Time
-	entries map[string]windowEntry
+	mu        sync.Mutex
+	limit     int
+	window    time.Duration
+	now       func() time.Time
+	entries   map[string]windowEntry
+	nextSweep time.Time
 }
 
 func NewWindowLimiter(limit int, window time.Duration) *WindowLimiter {
@@ -37,6 +38,14 @@ func (l *WindowLimiter) Allow(key string) bool {
 	now := l.now()
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if l.nextSweep.IsZero() || !now.Before(l.nextSweep) {
+		for entryKey, entry := range l.entries {
+			if !now.Before(entry.started.Add(l.window)) {
+				delete(l.entries, entryKey)
+			}
+		}
+		l.nextSweep = now.Add(l.window)
+	}
 
 	entry := l.entries[key]
 	if entry.started.IsZero() || now.Sub(entry.started) >= l.window {

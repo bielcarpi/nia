@@ -29,12 +29,20 @@ func (DemoVerifier) Verify(_ context.Context, bearerToken, _ string) (Identity, 
 }
 
 type FirebaseVerifier struct {
-	auth            *firebaseauth.Client
-	appCheck        *appcheck.Client
+	auth            idTokenVerifier
+	appCheck        appCheckTokenVerifier
 	requireAppCheck bool
 }
 
-func NewFirebaseVerifier(authClient *firebaseauth.Client, appCheckClient *appcheck.Client, requireAppCheck bool) (*FirebaseVerifier, error) {
+type idTokenVerifier interface {
+	VerifyIDToken(context.Context, string) (*firebaseauth.Token, error)
+}
+
+type appCheckTokenVerifier interface {
+	VerifyToken(string) (*appcheck.DecodedAppCheckToken, error)
+}
+
+func NewFirebaseVerifier(authClient idTokenVerifier, appCheckClient appCheckTokenVerifier, requireAppCheck bool) (*FirebaseVerifier, error) {
 	if authClient == nil {
 		return nil, errors.New("firebase auth client is required")
 	}
@@ -49,7 +57,7 @@ func (v *FirebaseVerifier) Verify(ctx context.Context, bearerToken, appCheckToke
 		return Identity{}, ErrUnauthenticated
 	}
 	token, err := v.auth.VerifyIDToken(ctx, bearerToken)
-	if err != nil || token.UID == "" {
+	if err != nil || token == nil || token.UID == "" {
 		return Identity{}, ErrUnauthenticated
 	}
 	if v.requireAppCheck {

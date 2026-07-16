@@ -12,9 +12,10 @@ import (
 )
 
 type conversationRecord struct {
-	summary  domain.ConversationSummary
-	turns    map[string]domain.Turn
-	feedback *domain.Feedback
+	summary         domain.ConversationSummary
+	turns           map[string]domain.Turn
+	feedback        *domain.Feedback
+	completionLease *domain.CompletionLease
 }
 
 type Store struct {
@@ -129,26 +130,77 @@ func (s *Store) UpsertTurn(_ context.Context, uid, conversationID string, turn d
 	if record.summary.Status == domain.StatusCompleted {
 		return domain.Turn{}, domain.Conflict("Completed conversations cannot be changed.")
 	}
+	now := time.Now().UTC()
+	if now.After(record.summary.CreatedAt.Add(domain.MaxActiveConversationAge)) {
+		return domain.Turn{}, domain.Conflict("This practice session has expired. Start a new conversation to continue.")
+	}
+	if record.completionLease != nil && record.completionLease.ExpiresAt.After(now) {
+		return domain.Turn{}, domain.CompletionInProgress()
+	}
+	if record.completionLease != nil {
+		record.completionLease = nil
+	}
 	if _, exists := record.turns[turn.ID]; !exists {
+		if record.summary.TurnCount >= domain.MaxTurnsPerConversation {
+			return domain.Turn{}, domain.Conflict("This conversation reached its 200-turn limit. Complete it or start a new one.")
+		}
 		record.summary.TurnCount++
 	}
 	record.turns[turn.ID] = turn
-	record.summary.UpdatedAt = time.Now().UTC()
+	record.summary.UpdatedAt = now
 	return turn, nil
 }
 
-func (s *Store) CompleteConversation(_ context.Context, uid, id string, feedback domain.Feedback) (domain.ConversationDetail, error) {
+func (s *Store) ClaimConversationCompletion(_ context.Context, uid, id string, lease domain.CompletionLease) (domain.ConversationDetail, bool, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	record := s.record(uid, id)
+	if record == nil {
+		return domain.ConversationDetail{}, false, domain.NotFound()
+	}
+	if record.summary.Status == domain.StatusCompleted && record.feedback != nil {
+		return copyDetail(record), false, nil
+	}
+	if record.completionLease != nil && record.completionLease.ExpiresAt.After(lease.StartedAt) {
+		return domain.ConversationDetail{}, false, domain.CompletionInProgress()
+	}
+	leaseCopy := lease
+	record.completionLease = &leaseCopy
+	return copyDetail(record), true, nil
+}
+
+func (s *Store) CompleteConversation(_ context.Context, uid, id, leaseID string, feedback domain.Feedback) (domain.ConversationDetail, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	record := s.record(uid, id)
 	if record == nil {
 		return domain.ConversationDetail{}, domain.NotFound()
 	}
+	if record.summary.Status == domain.StatusCompleted && record.feedback != nil {
+		return copyDetail(record), nil
+	}
+	if record.completionLease == nil || record.completionLease.ID != leaseID {
+		return domain.ConversationDetail{}, domain.CompletionInProgress()
+	}
 	feedbackCopy := copyFeedback(feedback)
 	record.feedback = &feedbackCopy
+	record.completionLease = nil
 	record.summary.Status = domain.StatusCompleted
 	record.summary.UpdatedAt = feedback.GeneratedAt.UTC()
 	return copyDetail(record), nil
+}
+
+func (s *Store) ReleaseConversationCompletion(_ context.Context, uid, id, leaseID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	record := s.record(uid, id)
+	if record == nil || record.summary.Status == domain.StatusCompleted {
+		return nil
+	}
+	if record.completionLease != nil && record.completionLease.ID == leaseID {
+		record.completionLease = nil
+	}
+	return nil
 }
 
 func (s *Store) DeleteConversation(_ context.Context, uid, id string) error {
@@ -156,6 +208,9 @@ func (s *Store) DeleteConversation(_ context.Context, uid, id string) error {
 	defer s.mu.Unlock()
 	if s.record(uid, id) == nil {
 		return domain.NotFound()
+	}
+	if lease := s.record(uid, id).completionLease; lease != nil && lease.ExpiresAt.After(time.Now().UTC()) {
+		return domain.CompletionInProgress()
 	}
 	delete(s.conversations[uid], id)
 	return nil

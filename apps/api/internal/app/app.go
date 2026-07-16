@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	firebase "firebase.google.com/go/v4"
 	"github.com/bielcarpi/nia/apps/api/internal/auth"
@@ -124,6 +125,8 @@ func Build(ctx context.Context, cfg config.Config, logger *slog.Logger) (*Runtim
 		Realtime:             realtime,
 		SessionLimitPerHour:  cfg.SessionLimitPerHour,
 		FeedbackLimitPerHour: cfg.FeedbackLimitPerHour,
+		TurnLimitPerMinute:   cfg.TurnLimitPerMinute,
+		CompletionLease:      cfg.RequestTimeout + 30*time.Second,
 	})
 	if err != nil {
 		_ = store.Close()

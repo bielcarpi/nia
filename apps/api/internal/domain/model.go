@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -15,6 +16,12 @@ const (
 
 	TransportDemo   = "demo"
 	TransportWebRTC = "webrtc"
+
+	// A realtime grant is short lived, but transcript writes arrive separately.
+	// These persistence bounds keep a leaked or modified client from turning one
+	// grant into an unbounded Firestore workload.
+	MaxTurnsPerConversation  = 200
+	MaxActiveConversationAge = 2 * time.Hour
 )
 
 var identifierPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$`)
@@ -47,7 +54,7 @@ func (p Preferences) Validate() error {
 		return ValidationError("level", "must be beginner, intermediate, or advanced")
 	}
 	topic := strings.TrimSpace(p.Topic)
-	if len(topic) < 1 || len(topic) > 120 {
+	if utf8.RuneCountInString(topic) < 1 || utf8.RuneCountInString(topic) > 120 {
 		return ValidationError("topic", "must contain between 1 and 120 characters")
 	}
 	switch p.CorrectionStyle {
@@ -117,7 +124,7 @@ func (t Turn) Validate() error {
 		return ValidationError("role", "must be user or assistant")
 	}
 	t.Text = strings.TrimSpace(t.Text)
-	if len(t.Text) < 1 || len(t.Text) > 8000 {
+	if utf8.RuneCountInString(t.Text) < 1 || utf8.RuneCountInString(t.Text) > 8000 {
 		return ValidationError("text", "must contain between 1 and 8000 characters")
 	}
 	if t.OccurredAt.IsZero() {
@@ -154,6 +161,15 @@ type ConversationPage struct {
 	NextCursor string                `json:"next_cursor,omitempty"`
 }
 
+// CompletionLease is an internal, short-lived ownership claim for feedback
+// generation. Stores must acquire it atomically so only one API instance can
+// spend provider capacity for a conversation at a time.
+type CompletionLease struct {
+	ID        string    `firestore:"id"`
+	StartedAt time.Time `firestore:"started_at"`
+	ExpiresAt time.Time `firestore:"expires_at"`
+}
+
 type ClientSecret struct {
 	Value     string `json:"value"`
 	ExpiresAt int64  `json:"expires_at"`
@@ -186,7 +202,9 @@ type ConversationStore interface {
 	ListConversations(context.Context, string, string, int) (ConversationPage, error)
 	GetConversation(context.Context, string, string) (ConversationDetail, error)
 	UpsertTurn(context.Context, string, string, Turn) (Turn, error)
-	CompleteConversation(context.Context, string, string, Feedback) (ConversationDetail, error)
+	ClaimConversationCompletion(context.Context, string, string, CompletionLease) (ConversationDetail, bool, error)
+	CompleteConversation(context.Context, string, string, string, Feedback) (ConversationDetail, error)
+	ReleaseConversationCompletion(context.Context, string, string, string) error
 	DeleteConversation(context.Context, string, string) error
 	Close() error
 }
@@ -244,6 +262,24 @@ func NotFound() error {
 
 func Conflict(message string) error {
 	return &PublicError{Code: "conflict", Message: message, Status: 409}
+}
+
+func CompletionInProgress() error {
+	return &PublicError{
+		Code:      "conflict",
+		Message:   "Conversation feedback is already being generated.",
+		Status:    409,
+		Retryable: true,
+	}
+}
+
+func DeletionInProgress() error {
+	return &PublicError{
+		Code:      "conflict",
+		Message:   "Conversation deletion is already in progress.",
+		Status:    409,
+		Retryable: true,
+	}
 }
 
 func RateLimited() error {

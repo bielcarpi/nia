@@ -16,6 +16,9 @@ func TestLoadFromLocalDefaults(t *testing.T) {
 	if config.RealtimeModel != "gpt-realtime-2.1" || config.FeedbackModel != "gpt-5.6-terra" {
 		t.Fatalf("unexpected model defaults: realtime=%q feedback=%q", config.RealtimeModel, config.FeedbackModel)
 	}
+	if config.TurnLimitPerMinute != 120 {
+		t.Fatalf("turn limit default = %d", config.TurnLimitPerMinute)
+	}
 }
 
 func TestLoadFromProductionFailsClosed(t *testing.T) {
@@ -46,6 +49,8 @@ func TestProductionRejectsUnsafeOverrides(t *testing.T) {
 		{"NIA_REQUIRE_APP_CHECK": "false"},
 		{"NIA_ALLOWED_ORIGINS": "http://nia.example"},
 		{"NIA_OPENAI_BASE_URL": "https://proxy.example/v1"},
+		{"NIA_REALTIME_SDP_ENDPOINT": "http://api.openai.com/v1/realtime/calls"},
+		{"NIA_REALTIME_SDP_ENDPOINT": "https://realtime-proxy.example/calls"},
 	}
 	for _, override := range tests {
 		environment := map[string]string{
@@ -60,6 +65,27 @@ func TestProductionRejectsUnsafeOverrides(t *testing.T) {
 		if _, err := LoadFrom(mapLookup(environment)); err == nil {
 			t.Fatalf("LoadFrom(%v) succeeded, want failure", override)
 		}
+	}
+}
+
+func TestAllowedOriginsRejectURLComponentsOutsideOrigin(t *testing.T) {
+	for _, origin := range []string{
+		"https://nia.example/",
+		"https://nia.example/path",
+		"https://nia.example?preview=true",
+		"https://nia.example#fragment",
+		"https://*.nia.example",
+	} {
+		_, err := LoadFrom(mapLookup(map[string]string{"NIA_ALLOWED_ORIGINS": origin}))
+		if err == nil {
+			t.Fatalf("LoadFrom() accepted non-origin URL %q", origin)
+		}
+	}
+}
+
+func TestTranscriptWriteLimitMustBePositive(t *testing.T) {
+	if _, err := LoadFrom(mapLookup(map[string]string{"NIA_TURN_LIMIT_PER_MINUTE": "0"})); err == nil {
+		t.Fatal("LoadFrom() accepted a zero transcript write limit")
 	}
 }
 

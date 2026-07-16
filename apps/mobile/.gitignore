@@ -1,0 +1,19 @@
+# Generated Flutter files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+coverage/
+.idea/
+*.iml
+android/local.properties
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/Pods/
+
+# Local Firebase project configuration. Production values are supplied by
+# --dart-define; these native files are optional for store builds only.
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json

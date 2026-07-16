@@ -68,7 +68,7 @@ func TestWindowLimiter(t *testing.T) {
 	}
 }
 
-func TestEmptyCompletionDoesNotConsumeFeedbackQuota(t *testing.T) {
+func TestCompletionWithoutLearnerTurnDoesNotConsumeFeedbackQuota(t *testing.T) {
 	application, err := New(Options{
 		Store: memory.New(), Issuer: demo.RealtimeIssuer{}, Feedback: demo.FeedbackGenerator{},
 		Realtime:            domain.RealtimeConnection{Transport: domain.TransportDemo, Endpoint: "demo://local", Model: "deterministic-demo"},
@@ -82,15 +82,19 @@ func TestEmptyCompletionDoesNotConsumeFeedbackQuota(t *testing.T) {
 	if err != nil {
 		t.Fatalf("CreateSession() error = %v", err)
 	}
+	assistantTurn := domain.Turn{ID: "turn_assistant", Role: "assistant", Text: "Hola", OccurredAt: time.Now().UTC()}
+	if _, err := application.UpsertTurn(ctx, "user", grant.Conversation.ID, assistantTurn); err != nil {
+		t.Fatalf("UpsertTurn(assistant) error = %v", err)
+	}
 	if _, err := application.CompleteConversation(ctx, "user", grant.Conversation.ID); err == nil {
-		t.Fatal("empty CompleteConversation() succeeded")
+		t.Fatal("assistant-only CompleteConversation() succeeded")
 	} else {
 		var public *domain.PublicError
 		if !errors.As(err, &public) || public.Status != 409 {
-			t.Fatalf("empty CompleteConversation() error = %v", err)
+			t.Fatalf("assistant-only CompleteConversation() error = %v", err)
 		}
 	}
-	turn := domain.Turn{ID: "turn_abcdefgh", Role: "user", Text: "Hola", OccurredAt: time.Now().UTC()}
+	turn := domain.Turn{ID: "turn_abcdefgh", Role: "user", Text: "Quiero practicar", OccurredAt: time.Now().UTC()}
 	if _, err := application.UpsertTurn(ctx, "user", grant.Conversation.ID, turn); err != nil {
 		t.Fatalf("UpsertTurn() error = %v", err)
 	}

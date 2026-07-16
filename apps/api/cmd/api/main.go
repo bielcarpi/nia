@@ -60,7 +60,7 @@ func run() error {
 	}
 	serverErrors := make(chan error, 1)
 	go func() {
-		logger.Info("server starting", "port", cfg.Port, "environment", cfg.Environment)
+		logger.Info("server starting", "port", cfg.Port)
 		serverErrors <- server.ListenAndServe()
 	}()
 

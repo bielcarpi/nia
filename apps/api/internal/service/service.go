@@ -150,8 +150,15 @@ func (s *Service) CompleteConversation(ctx context.Context, uid, id string) (dom
 	if detail.Feedback != nil && detail.Conversation.Status == domain.StatusCompleted {
 		return detail, nil
 	}
-	if len(detail.Turns) == 0 {
-		return domain.ConversationDetail{}, domain.Conflict("Add at least one transcript turn before completing the conversation.")
+	hasLearnerTurn := false
+	for _, turn := range detail.Turns {
+		if turn.Role == "user" {
+			hasLearnerTurn = true
+			break
+		}
+	}
+	if !hasLearnerTurn {
+		return domain.ConversationDetail{}, domain.Conflict("Add at least one learner turn before completing the conversation.")
 	}
 	if !s.feedbackLimiter.Allow(uid) {
 		return domain.ConversationDetail{}, domain.RateLimited()
